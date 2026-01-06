@@ -9,11 +9,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) =>{
-    res.json({message : "Bienvenue dans l'API UnderSport"})
+app.get("/", (req, res) => {
+    res.json({ message: "Bienvenue dans l'API UnderSport" })
 });
 
-app.listen(process.env.SERVER_PORT, () =>{
+app.listen(process.env.SERVER_PORT, () => {
     console.log(`L'API est lancée sur http://localhost:${process.env.SERVER_PORT}`);
-    
+
 })
