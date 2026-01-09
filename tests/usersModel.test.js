@@ -11,7 +11,6 @@ describe('Test CRUD usersModel', () => {
             // avec un Pool, la connexion est souvent automatique,
             // mais on garde ça pour vérifier que la BDD répond bien.
             await bdd.getConnection();
-            console.log('Connexion BDD établie pour le test');
         } catch (error) {
             console.error(' Erreur de connexion BDD', error);
         }
@@ -24,7 +23,6 @@ describe('Test CRUD usersModel', () => {
 
         // act
         const result = await usersModel.fetchAllUsers();
-        console.log("Données reçues :", result); // Utile pour voir le résultat dans le terminal
 
         // assert (On vérifie)
         expect(result).toBeDefined(); // Est-ce que ça existe ?
@@ -44,7 +42,6 @@ describe('Test CRUD usersModel', () => {
 
         // act
         const userById = await usersModel.fetchUsersById(userId);
-        console.log("User récupéré :", userById);
 
         // assert
         expect(userById).toBeDefined();
@@ -60,7 +57,6 @@ describe('Test CRUD usersModel', () => {
 
         // act
         const result = await usersModel.fetchUsersById(idUnknown);
-        console.log("Résultat pour user inconnu :", result);
 
         // assert
         expect(result).toBeUndefined();
@@ -76,8 +72,6 @@ describe('Test CRUD usersModel', () => {
     //         'Doe',             // lastName
     //         'avatar.jpg'       // picture
     //     );
-
-    //     console.log("Résultat Création :", result);
 
     //     expect(result).toBeDefined();
     //     expect(result).toHaveProperty('insertId');
@@ -110,8 +104,6 @@ describe('Test CRUD usersModel', () => {
     //         newPicture
     //     );
 
-    //     console.log("Résultat Update ID 4 :", result);
-
     //     // 4. Vérification
     //     expect(result.affectedRows).toBe(1); // Doit modifier 1 ligne
 
@@ -128,7 +120,6 @@ describe('Test CRUD usersModel', () => {
 
     //     // On lance la suppression
     //     const result = await usersModel.deleteUser(targetId);
-    //     console.log("Résultat Delete ID 4 :", result);
 
     //     // Vérification : une ligne a été touchée
     //     expect(result.affectedRows).toBe(1);
@@ -143,7 +134,6 @@ describe('Test CRUD usersModel', () => {
     afterAll(async () => {
         try {
             await bdd.end(); // Très important pour arrêter le test proprement
-            console.log('🚪 Fermeture connexion BDD');
         } catch (error) {
             console.error('Erreur fermeture', error);
         }

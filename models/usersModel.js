@@ -21,7 +21,7 @@ const addUser = async (nickname, email, password, firstName, lastName, picture) 
     return result;
 };
 
-const updateUser = async (id ,nickname, email, firstName, lastName, picture) => {
+const updateUser = async (id, nickname, email, firstName, lastName, picture) => {
     const sql = `UPDATE users SET
     nickname = ?, email = ?, firstName = ?, lastName = ?, picture = ?
     WHERE userId = ?;`;
@@ -47,6 +47,19 @@ const updatePassword = async (id, password) => {
     return result;
 }
 
+const login = async (email) => {
+    const sql = `SELECT userId, nickname, email, password, firstName, lastName, picture, idRole FROM users
+    WHERE email = ?;`;
+    const [result] = await bdd.query(sql, [email]);
+    return result
+}
+
+const updateRoleUser = async (idRole, userId) => {
+    const sql = `UPDATE users SET idRole = ? WHERE userId = ?`;
+    const [result]= await bdd.query(sql, [idRole, userId]);
+    return result;
+}
+
 export default {
     fetchAllUsers,
     fetchUsersById,
@@ -54,5 +67,7 @@ export default {
     updateUser,
     deleteUser,
     fetchExistingUsers,
-    updatePassword
+    updatePassword,
+    login,
+    updateRoleUser
 };
