@@ -1,5 +1,9 @@
 import usersModel from "../models/usersModel.js"
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const getAllUsers = async (req, res) => {
     try {
@@ -103,14 +107,70 @@ const deleteUser = async (req, res) => {
         const userDelete = await usersModel.deleteUser(id)
 
         if (userDelete.affectedRows === 0) {
-            res.status(404).json({message: "users non trouvé"})
+            res.status(404).json({ message: "users non trouvé" })
         } else {
-            res.status(200).json({message: 'User supprimmé'})
+            res.status(200).json({ message: 'User supprimmé' })
         }
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la suppression de l'user", });
     }
 }
+
+const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const userLogin = await usersModel.login(email);
+
+        if (!userLogin) {
+            return res.status(404).json({ message: "user non trouvé" })
+        }
+
+        const checkPassword = bcrypt.compareSync(password, userLogin[0].password);
+
+        if (checkPassword) {
+            const token = jwt.sign(
+                {
+                    userId: userLogin[0].userId,
+                    nickname: userLogin[0].nickname,
+                    firstName: userLogin[0].firstName,
+                    lastName: userLogin[0].lastName,
+                    picture: userLogin[0].picture,
+                    idRole: userLogin[0].idRole
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+            res.status(200).json({ message: "Connexion réussie", token })
+        } else {
+            res.status(401).json({ message: "erreur de connexion" })
+        }
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la connexion de l'user" });
+    }
+}
+
+const updateRole = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { idRole } = req.body;
+
+        if (!idRole) {
+            return res.status(400).json({ message: "Il manque le nouveau rôle " });
+        }
+
+        const result = await usersModel.updateRoleUser(idRole, id);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+
+        res.status(200).json({ message: "Rôle modifié avec succès" });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur serveur lors du changement de rôle" });
+    }
+};
 
 export default {
     getAllUsers,
@@ -118,5 +178,7 @@ export default {
     addUsers,
     updateUser,
     updatePassword,
-    deleteUser
+    deleteUser,
+    login,
+    updateRole
 }
