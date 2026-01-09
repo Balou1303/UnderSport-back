@@ -11,4 +11,13 @@ const bdd = mysql2.createPool({
     port: process.env.DB_PORT,
 })
 
+bdd.getConnection()
+try {
+    console.log("database ok ✅​");
+    
+} catch (error) {
+    console.error("database ko ❌​");
+    
+}
+
 export default bdd;
