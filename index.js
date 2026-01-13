@@ -2,7 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import usersRoutes from './routes/usersRoutes.js';
-import sportsRoute from './routes/sportsRoutes.js';
+import sportsRoutes from './routes/sportsRoutes.js';
+import rulesRoutes from "./routes/rulesRoutes.js"
 
 dotenv.config();
 
@@ -16,7 +17,8 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/users', usersRoutes);
-app.use('/api/sports', sportsRoute);
+app.use('/api/sports', sportsRoutes);
+app.use('/api/rules', rulesRoutes);
 
 app.listen(process.env.SERVER_PORT, () => {
     console.log(`L'API est lancée sur http://localhost:${process.env.SERVER_PORT} ✅​`);

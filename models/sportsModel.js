@@ -7,7 +7,7 @@ const fetchAllSports = async () => {
 };
 
 const fetchSportsById = async (id) => {
-    const sql = `SELECT name FROM sports WHERE sportId = ?;`;
+    const sql = `SELECT sportId, name FROM sports WHERE sportId = ?;`;
     const [result] = await bdd.query(sql, [id]);
     return result[0];
 };
