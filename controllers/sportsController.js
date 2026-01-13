@@ -58,10 +58,15 @@ const updateSport = async (req, res) => {
             return res.status(409).json({ message: "Le nom existe déjà" });
         };
         const sportUpdate = await sportsModel.updateSport(name, id);
-        res.status(200).json(sportUpdate);
+        if (sportUpdate.affectedRows === 0) {
+            res.status(404).json({ message: "Sport non trouvé" });
+        } else {
+            res.status(200).json({ message: "Sport mis à jour avec succès" });
+        }
+
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la mise à jour du sport" });
-    };
+        res.status(500).json({ message: "Erreur lors de la mise à jour" });
+    }
 };
 
 const deleteSport = async (req, res) => {
