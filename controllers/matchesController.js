@@ -47,8 +47,6 @@ const addMatch = async (req, res) => {
         const newMatch = await matchesModel.createMatch(matchDate, matchTime, idHomeTeam, idAwayTeam, idChampionship);
         res.status(201).json(newMatch)
     } catch (error) {
-        console.log(error);
-        
         res.status(500).json({ message: "Erreur lors de la création du match" });
     };
 };
