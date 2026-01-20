@@ -10,7 +10,6 @@ const checkAdmin = (req, res, next) => {
         return res.status(403).json({ message: "Accès interdit : Vous n'êtes pas administrateur" });
     }
 
-    // C'est un admin ? Il passe !
     next();
 };
 
