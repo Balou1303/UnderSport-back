@@ -9,6 +9,7 @@ import championshipsRoutes from "./routes/championshipsRoutes.js";
 import matchesRoutes from "./routes/matchesRoutes.js";
 import articlesRoutes from "./routes/articlesRoutes.js";
 import commentsRoute from "./routes/commentsRoutes.js";
+import broadcastersRoutes from "./routes/broadcastersRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/championships', championshipsRoutes);
 app.use('/api/matches', matchesRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/comments', commentsRoute);
+app.use('/api/broadcasters', broadcastersRoutes);
 
 app.listen(process.env.SERVER_PORT, () => {
     console.log(`L'API est lancée sur http://localhost:${process.env.SERVER_PORT} ✅​`);
