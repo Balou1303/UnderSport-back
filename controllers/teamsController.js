@@ -79,9 +79,7 @@ const deleteTeam = async (req, res) => {
         } else {
             res.status(200).json({ message: "équipe supprimée avec succès" });
         }
-    } catch (error) {
-        console.log(error);
-        
+    } catch (error) {        
         res.status(500).json({ message: "Erreur lors de la suppression de l'équipe" });
     }
 };
