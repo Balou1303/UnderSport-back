@@ -85,7 +85,7 @@ const updatePassword = async (req, res) => {
         const { newPassword } = req.body;
         if (!newPassword) {
             return res.status(400).json({ message: 'Le nouveau mot de passe est obligatoire' });
-        }
+        };
 
         const hashedPassword = bcrypt.hashSync(newPassword, 10);
         const result = await usersModel.updatePassword(id, hashedPassword);
@@ -94,12 +94,12 @@ const updatePassword = async (req, res) => {
             res.status(404).json({ message: "user non trouvé" });
         } else {
             res.status(200).json({ message: "Mot de passe modifié avec succès !" });
-        }
+        };
 
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la modification du mot de passe", });
-    }
-}
+    };
+};
 
 const deleteUser = async (req, res) => {
     try {
@@ -121,7 +121,7 @@ const login = async (req, res) => {
         const { email, password } = req.body;
         const userLogin = await usersModel.login(email);
 
-        if (!userLogin) {
+        if (!userLogin[0]) {
             return res.status(404).json({ message: "user non trouvé" })
         }
 
@@ -130,7 +130,7 @@ const login = async (req, res) => {
         if (checkPassword) {
             const token = jwt.sign(
                 {
-                    userId: userLogin[0].userId,
+                    id: userLogin[0].userId,
                     nickname: userLogin[0].nickname,
                     firstName: userLogin[0].firstName,
                     lastName: userLogin[0].lastName,
