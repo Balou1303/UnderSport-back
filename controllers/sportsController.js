@@ -115,15 +115,14 @@ const addLexiconToSport = async (req, res) => {
             return res.status(404).json({ message: "Définition introuvable" });
         }
 
-        const linkExists = await sportsModel.checkLexiconLink(idSport, idLexicon);
-        if (linkExists) {
+        const lexiconSportExists = await sportsModel.checkLexiconLink(idSport, idLexicon);
+        if (lexiconSportExists) {
             return res.status(409).json({ message: "Ce mot est déjà associé à ce sport" });
         }
 
         const newLexiconBySport = await sportsModel.addLexiconToSport(idSport, idLexicon);
         res.status(201).json({ message: "Définition ajoutée au sport" });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "Erreur lors de l'ajout" });
     }
 };

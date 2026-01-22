@@ -63,7 +63,7 @@ const deleteRule = async (req, res) => {
     try {
         const id = req.params.id;
         const result = await rulesModel.deleteRule(id);
-        
+
         if (result.affectedRows === 0) {
             res.status(404).json({ message: "Règle non trouvée" });
         } else {
@@ -74,10 +74,57 @@ const deleteRule = async (req, res) => {
     }
 };
 
+const getRulesBySport = async (req, res) => {
+    try {
+        const { idSport } = req.params;
+        const rules = await rulesModel.getRulesBySportId(idSport);
+        res.status(200).json(rules);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
+const addRuleToSport = async (req, res) => {
+    try {
+        const { idRule, idSport } = req.body; // On reçoit les deux IDs
+
+        if (!idRule || !idSport) {
+            return res.status(400).json({ message: "Il manque l'idRule ou l'idSport" });
+        }
+
+        const newRuleToSport = await rulesModel.addRuleToSport(idRule, idSport);
+        res.status(200).json({ message: "Règle associée au sport avec succès" });
+
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: "Cette règle est déjà associée à ce sport" });
+        }
+        console.log(error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
+const deleteRuleFromSport = async (req, res) => {
+    try {
+        const { idRule, idSport } = req.params;
+
+        const disociateRuleFromSport = await rulesModel.deleteRuleFromSport(idRule, idSport);
+        res.status(200).json({ message: "Règle dissociée du sport" });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
 export default {
     getAllRules,
     getRulesById,
     addRule,
     updateRule,
-    deleteRule
+    deleteRule,
+    getRulesBySport,
+    addRuleToSport,
+    deleteRuleFromSport
 }
