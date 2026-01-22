@@ -1,14 +1,23 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllArticles = async () => {
-    const sql = `SELECT articleId, content, title, picture, publicationDate, updateDate, idUser FROM articles;`;
+    const sql = `
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.nickname AS authorName  
+        FROM articles a
+        JOIN users u ON a.idUser = u.userId;
+    `;
+
     const [result] = await bdd.query(sql);
     return result;
 };
 
 const fetchArticleById = async (id) => {
-    const sql = `SELECT articleId, content, title, picture, publicationDate, updateDate, idUser FROM articles
-    WHERE articleId = ?;`;
+    const sql = `
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.nickname AS authorName
+        FROM articles a
+        JOIN users u ON a.idUser = u.userId
+        WHERE articleId = ?;
+    `;
     const [result] = await bdd.query(sql, [id]);
     return result[0];
 };
@@ -37,11 +46,34 @@ const deleteArticle = async (id) => {
     return result;
 };
 
-// Pour vérifier si l'auteur existe avant de poster
 const checkAuthorExists = async (idUser) => {
     const sql = `SELECT userId FROM users WHERE userId = ?`;
     const [result] = await bdd.query(sql, [idUser]);
     return result[0];
+};
+
+const addSportToArticle = async (idArticle, idSport) => {
+    const sql = `INSERT INTO sportsArticles (idArticle, idSport) VALUES (?, ?)`;
+    const [result] = await bdd.query(sql, [idArticle, idSport]);
+    return result;
+};
+
+const removeSportFromArticle = async (idArticle, idSport) => {
+    const sql = `DELETE FROM sportsArticles WHERE idArticle = ? AND idSport = ?`;
+    const [result] = await bdd.query(sql, [idArticle, idSport]);
+    return result;
+};
+
+
+const getSportsByArticleId = async (idArticle) => {
+    const sql = `
+        SELECT s.sportId, s.name
+        FROM sports s
+        JOIN sportsArticles sa ON s.sportId = sa.idSport
+        WHERE sa.idArticle = ?
+    `;
+    const [result] = await bdd.query(sql, [idArticle]);
+    return result;
 };
 
 export default {
@@ -50,5 +82,8 @@ export default {
     createArticle,
     updateArticle,
     deleteArticle,
-    checkAuthorExists
+    checkAuthorExists,
+    addSportToArticle,
+    removeSportFromArticle,
+    getSportsByArticleId
 };

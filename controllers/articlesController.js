@@ -27,24 +27,19 @@ const getArticleById = async (req, res) => {
 
 const addArticle = async (req, res) => {
     try {
-        const { title, content, picture } = req.body;
+        const { title, content, picture } = req.body; 
         const idUser = req.user.id;
 
-        if (!title || !content ) {
-            res.status(400).json({ message: "Les champs sont obligatoires" });
-            return;
-        };
-
-        const authorExists = await articlesModel.checkAuthorExists(idUser);
-        if (!authorExists) {
-            return res.status(404).json({ message: "L'auteur n'existe pas" });
-        };
+        if (!title || !content) {
+             return res.status(400).json({ message: "Les champs titre et contenu sont obligatoires" });
+        }
 
         const newArticle = await articlesModel.createArticle(title, content, picture, idUser);
-        res.status(201).json(newArticle)
+        
+        res.status(201).json(newArticle);
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la création du article" });
-    };
+        res.status(500).json({ message: "Erreur..." });
+    }
 };
 
 const updateArticle = async (req, res) => {
@@ -83,10 +78,55 @@ const deleteArticle = async (req, res) => {
     }
 };
 
+const addSportToArticle = async (req, res) => {
+    try {
+        const { idArticle, idSport } = req.body;
+
+        await articlesModel.addSportToArticle(idArticle, idSport);
+        res.status(200).json({ message: "Sport associé à l'article" });
+
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: "Ce sport est déjà lié à cet article" });
+        }
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
+const deleteSportFromArticle = async (req, res) => {
+    try {
+        const { idArticle, idSport } = req.params;
+
+        const result = await articlesModel.removeSportFromArticle(idArticle, idSport);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Lien non trouvé" });
+        }
+
+        res.status(200).json({ message: "Sport retiré de l'article" });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
+const getSportsByArticle = async (req, res) => {
+    try {
+        const { idArticle } = req.params;
+        const sports = await articlesModel.getSportsByArticleId(idArticle);
+        res.status(200).json(sports);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
 export default {
     getAllArticles,
     getArticleById,
     addArticle,
     updateArticle,
     deleteArticle,
+    addSportToArticle,
+    deleteSportFromArticle,
+    getSportsByArticle
 };
