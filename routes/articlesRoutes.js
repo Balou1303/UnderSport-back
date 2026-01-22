@@ -12,4 +12,8 @@ router.post('/', checkToken, checkEditor, articlesController.addArticle);
 router.put('/:id', checkToken, checkEditor, articlesController.updateArticle);
 router.delete('/:id', checkToken, checkAdmin, articlesController.deleteArticle);
 
+router.get('/:idArticle/sports', articlesController.getSportsByArticle);
+router.post('/sports', checkToken, checkEditor, articlesController.addSportToArticle);
+router.delete('/:idArticle/sports/:idSport', checkToken, checkEditor, articlesController.deleteSportFromArticle); 
+
 export default router;
