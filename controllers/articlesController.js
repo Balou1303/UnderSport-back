@@ -16,11 +16,11 @@ const getArticleById = async (req, res) => {
 
         if (!articleById) {
             res.status(404).json({ message: "article non trouvé" });
-            return;
+            return;            
         }
         res.status(200).json(articleById);
 
-    } catch (error) {     
+    } catch (error) {
         res.status(500).json({ message: "Erreur lors de la récupération du article" });
     };
 };
@@ -106,7 +106,7 @@ const deleteSportFromArticle = async (req, res) => {
         res.status(200).json({ message: "Sport retiré de l'article" });
 
     } catch (error) {
-        res.status(500).json({ message: "Erreur serveur" });
+        res.status(500).json({ message: "Erreur lors du retrait du sport de l'article" });
     }
 };
 
@@ -130,6 +130,17 @@ const getArticlesBySport = async (req, res) => {
     }
 }
 
+const getPopularity = async (req, res) => {
+    try {
+        const result = await articlesModel.getArticleByPopularity();
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        
+        res.status(500).json({ message: "Erreur lors de l'analyse de popularité" });
+    }
+};
+
 export default {
     getAllArticles,
     getArticleById,
@@ -139,5 +150,6 @@ export default {
     addSportToArticle,
     deleteSportFromArticle,
     getSportsByArticle,
-    getArticlesBySport
+    getArticlesBySport,
+    getPopularity
 };

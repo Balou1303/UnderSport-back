@@ -1,7 +1,6 @@
 import express from 'express';
 import commentsController from '../controllers/commentsController.js';
 import checkToken from "../middleware/checkToken.js";
-import checkEditor from "../middleware/checkEditor.js"; 
 
 const router = express.Router();
 

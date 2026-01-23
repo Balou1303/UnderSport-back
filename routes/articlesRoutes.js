@@ -7,6 +7,7 @@ import checkAdmin from '../middleware/checkAdmin.js';
 const router = express.Router();
 
 router.get('/', articlesController.getAllArticles);
+router.get('/popularity', checkToken, checkAdmin, articlesController.getPopularity);
 router.get('/:id', articlesController.getArticleById);
 router.post('/', checkToken, checkEditor, articlesController.addArticle);
 router.put('/:id', checkToken, checkEditor, articlesController.updateArticle);
