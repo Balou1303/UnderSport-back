@@ -120,6 +120,16 @@ const getSportsByArticle = async (req, res) => {
     }
 };
 
+const getArticlesBySport = async (req, res) => {
+    try {
+       const{idSport} = req.params;
+       const articlesBySport = await articlesModel.getArticlesBySport(idSport);
+       res.status(200).json(articlesBySport) 
+    } catch (error) {
+        res.status(500).json({message: "Erreur lors de la récupération des articles par sports"});
+    }
+}
+
 export default {
     getAllArticles,
     getArticleById,
@@ -128,5 +138,6 @@ export default {
     deleteArticle,
     addSportToArticle,
     deleteSportFromArticle,
-    getSportsByArticle
+    getSportsByArticle,
+    getArticlesBySport
 };
