@@ -77,14 +77,14 @@ const deleteComment = async (req, res) => {
         const idUserConnected = req.user.id;
         const roleUserConnected = req.user.idRole;
 
-        // 👇 AJOUT SÉCURITÉ : On vérifie qui veut supprimer
+        // On vérifie qui veut supprimer
         const comment = await commentsModel.fetchCommentById(id);
         
         if (!comment) {
             return res.status(404).json({ message: "Commentaire non trouvé" });
         }
 
-        // On autorise la suppression SI c''est l'auteur du commentaire
+        // On autorise la suppression SI c'est l'auteur du commentaire
         // si c'est un Admin
         // si c'est un Journaliste (Pour la modération)
         if (idUserConnected !== comment.idUser && roleUserConnected !== 1 && roleUserConnected !== 2) {

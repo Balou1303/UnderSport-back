@@ -86,6 +86,16 @@ const getArticlesBySport = async (idSport) => {
     return result;
 };
 
+const getArticleByPopularity = async() => {
+    const sql = `SELECT a.articleId, a.title, a.publicationDate, COUNT (c.commentId) AS totalComment
+    FROM articles a
+    LEFT JOIN comments AS c ON a.articleId = c.idArticle
+    GROUP BY a.articleId
+    ORDER BY totalComment DESC;`;
+    const [result] = await bdd.query(sql);
+    return result
+}
+
 export default {
     fetchAllArticles,
     fetchArticleById,
@@ -96,5 +106,6 @@ export default {
     addSportToArticle,
     removeSportFromArticle,
     getSportsByArticleId,
-    getArticlesBySport
+    getArticlesBySport,
+    getArticleByPopularity
 };
