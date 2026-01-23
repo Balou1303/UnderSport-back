@@ -2,7 +2,7 @@ import bdd from "../config/bdd.js";
 
 const fetchAllArticles = async () => {
     const sql = `
-        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.nickname AS authorName  
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName  
         FROM articles a
         JOIN users u ON a.idUser = u.userId;
     `;
@@ -13,7 +13,7 @@ const fetchAllArticles = async () => {
 
 const fetchArticleById = async (id) => {
     const sql = `
-        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.nickname AS authorName
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName
         FROM articles a
         JOIN users u ON a.idUser = u.userId
         WHERE articleId = ?;
@@ -76,6 +76,16 @@ const getSportsByArticleId = async (idArticle) => {
     return result;
 };
 
+const getArticlesBySport = async (idSport) => {
+    const sql = `SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName
+    FROM articles a
+    INNER JOIN sportsArticles AS sa ON a.articleId = sa.idArticle
+    INNER JOIN users AS u ON a.idUser = u.userId
+    WHERE sa.idSport = ?`;
+    const [result] = await bdd.query(sql, [idSport]);
+    return result;
+};
+
 export default {
     fetchAllArticles,
     fetchArticleById,
@@ -85,5 +95,6 @@ export default {
     checkAuthorExists,
     addSportToArticle,
     removeSportFromArticle,
-    getSportsByArticleId
+    getSportsByArticleId,
+    getArticlesBySport
 };
