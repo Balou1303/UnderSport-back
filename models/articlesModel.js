@@ -1,14 +1,23 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllArticles = async () => {
-    const sql = `SELECT articleId, content, title, picture, publicationDate, updateDate, idUser FROM articles;`;
+    const sql = `
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName  
+        FROM articles a
+        JOIN users u ON a.idUser = u.userId;
+    `;
+
     const [result] = await bdd.query(sql);
     return result;
 };
 
 const fetchArticleById = async (id) => {
-    const sql = `SELECT articleId, content, title, picture, publicationDate, updateDate, idUser FROM articles
-    WHERE articleId = ?;`;
+    const sql = `
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName
+        FROM articles a
+        JOIN users u ON a.idUser = u.userId
+        WHERE articleId = ?;
+    `;
     const [result] = await bdd.query(sql, [id]);
     return result[0];
 };
@@ -37,12 +46,55 @@ const deleteArticle = async (id) => {
     return result;
 };
 
-// Pour vérifier si l'auteur existe avant de poster
 const checkAuthorExists = async (idUser) => {
     const sql = `SELECT userId FROM users WHERE userId = ?`;
     const [result] = await bdd.query(sql, [idUser]);
     return result[0];
 };
+
+const addSportToArticle = async (idArticle, idSport) => {
+    const sql = `INSERT INTO sportsArticles (idArticle, idSport) VALUES (?, ?)`;
+    const [result] = await bdd.query(sql, [idArticle, idSport]);
+    return result;
+};
+
+const removeSportFromArticle = async (idArticle, idSport) => {
+    const sql = `DELETE FROM sportsArticles WHERE idArticle = ? AND idSport = ?`;
+    const [result] = await bdd.query(sql, [idArticle, idSport]);
+    return result;
+};
+
+
+const getSportsByArticleId = async (idArticle) => {
+    const sql = `
+        SELECT s.sportId, s.name
+        FROM sports s
+        JOIN sportsArticles sa ON s.sportId = sa.idSport
+        WHERE sa.idArticle = ?
+    `;
+    const [result] = await bdd.query(sql, [idArticle]);
+    return result;
+};
+
+const getArticlesBySport = async (idSport) => {
+    const sql = `SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName
+    FROM articles a
+    INNER JOIN sportsArticles AS sa ON a.articleId = sa.idArticle
+    INNER JOIN users AS u ON a.idUser = u.userId
+    WHERE sa.idSport = ?`;
+    const [result] = await bdd.query(sql, [idSport]);
+    return result;
+};
+
+const getArticleByPopularity = async() => {
+    const sql = `SELECT a.articleId, a.title, a.publicationDate, COUNT (c.commentId) AS totalComment
+    FROM articles a
+    LEFT JOIN comments AS c ON a.articleId = c.idArticle
+    GROUP BY a.articleId
+    ORDER BY totalComment DESC;`;
+    const [result] = await bdd.query(sql);
+    return result
+}
 
 export default {
     fetchAllArticles,
@@ -50,5 +102,10 @@ export default {
     createArticle,
     updateArticle,
     deleteArticle,
-    checkAuthorExists
+    checkAuthorExists,
+    addSportToArticle,
+    removeSportFromArticle,
+    getSportsByArticleId,
+    getArticlesBySport,
+    getArticleByPopularity
 };

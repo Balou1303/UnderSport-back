@@ -34,11 +34,11 @@ const addLexicon = async (req, res) => {
 
         const existingLexicon = await lexiconsModel.fetchLexiconByName(name);
         if (existingLexicon) {
-            return res.status(409).json({ message: "Ce terme existe déjà dans le lexique" });
+            return res.status(409).json({ message: "Ce lexique existe déjà" });
         }
 
         const newLexicon = await lexiconsModel.createLexicon(name, description);
-        res.status(201).json({ message: "Lexique ajoutée", id: newLexicon.insertId });
+        res.status(201).json({ message: "Lexique ajouté", id: newLexicon.insertId });
 
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la création du lexique" });
@@ -56,16 +56,16 @@ const updateLexicon = async (req, res) => {
 
         const lexiconExists = await lexiconsModel.fetchLexiconsById(id);
         if (!lexiconExists) {
-            return res.status(404).json({ message: "Lexique non trouvée" });
+            return res.status(404).json({ message: "Lexique non trouvé" });
         }
 
         const checkName = await lexiconsModel.fetchLexiconByName(name);
         if (checkName && checkName.lexiconId !== parseInt(id)) {
-            return res.status(409).json({ message: "Ce terme existe déjà" });
+            return res.status(409).json({ message: "Ce lexique existe déjà" });
         }
 
         const lexiconUpdate = await lexiconsModel.updateLexicon(name, description, id);
-        res.status(200).json({ message: "Lexique mise à jour" });
+        res.status(200).json({ message: "Lexique mis à jour" });
 
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la mise à jour" });
@@ -78,11 +78,13 @@ const deleteLexicon = async (req, res) => {
         const result = await lexiconsModel.deleteLexicon(id);
 
         if (result.affectedRows === 0) {
-            res.status(404).json({ message: "Lexique non trouvée" });
+            res.status(404).json({ message: "Lexique non trouvé" });
         } else {
-            res.status(200).json({ message: "Lexique supprimée" });
+            res.status(200).json({ message: "Lexique supprimé" });
         }
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({ message: "Erreur lors de la suppression du lexique" });
     }
 };

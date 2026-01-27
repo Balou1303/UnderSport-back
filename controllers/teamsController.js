@@ -1,4 +1,5 @@
 import teamsModel from "../models/teamsModel.js";
+import achievementsModel from "../models/achievementsModel.js";
 
 const getAllTeams = async (req, res) => {
     try {
@@ -79,8 +80,41 @@ const deleteTeam = async (req, res) => {
         } else {
             res.status(200).json({ message: "équipe supprimée avec succès" });
         }
-    } catch (error) {        
+    } catch (error) {
         res.status(500).json({ message: "Erreur lors de la suppression de l'équipe" });
+    }
+};
+
+const addAchievementToTeam = async (req, res) => {
+    try {
+        const idTeam = req.params.id;
+        const { idAchievement, years } = req.body;
+
+        if (!idAchievement || !years) {
+            return res.status(400).json({ message: "L'ID du palmarès et l'année sont obligatoires" })
+        }
+
+        const teamExists = await teamsModel.fetchTeamsById(idTeam);
+        if (!teamExists) {
+            return res.status(404).json({ message: "L'équipe n'existe pas" });
+        }
+
+        const achievementExists = await achievementsModel.fetchAchievementById(idAchievement);
+        if (!achievementExists) {
+            return res.status(404).json({ message: "Palmarès introuvable" })
+        }
+
+        const linkExists = await teamsModel.checkAchievement(idTeam, idAchievement, years);
+        if (linkExists) {
+            return res.status(409).json({ message: "Ce trophée est déjà associé à cette équipe pour cette année" });
+        }
+
+        const newAchienvementToTeam = await teamsModel.addAchievementToTeam(idTeam, idAchievement, years);
+        res.status(201).json({ message: "Palmarès ajouté à l'équipe" });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Erreur serveur lors de l'ajout du palmarès" });
     }
 };
 
@@ -89,5 +123,6 @@ export default {
     getTeamsById,
     addTeam,
     updateTeam,
-    deleteTeam
+    deleteTeam,
+    addAchievementToTeam
 }

@@ -36,6 +36,8 @@ const fetchBroadcasterByName = async (name) => {
     return result[0];
 };
 
+
+
 export default {
     fetchAllBroadcasters,
     fetchBroadcasterById,
