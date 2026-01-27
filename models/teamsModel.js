@@ -36,11 +36,26 @@ const fetchExistingTeam = async (name, idSport) => {
     return result[0];
 };
 
+const addAchievementToTeam = async (idTeam, idAchievement, years) => {
+    const sql = `INSERT INTO achievementsTeams (idTeam, idAchievement, years) VALUES (?, ?, ?)`;
+    const [result] = await bdd.query(sql, [idTeam, idAchievement, years]);
+    return result;
+};
+
+const checkAchievement = async (idTeam, idAchievement, years) => {
+    const sql = `SELECT idTeam FROM achievementsTeams 
+                 WHERE idTeam = ? AND idAchievement = ? AND years = ?`;
+    const [result] = await bdd.query(sql, [idTeam, idAchievement, years]);
+    return result[0];
+};
+
 export default {
     fetchAllTeams,
     fetchTeamsById,
     createTeam,
     updateTeam,
     deleteTeam,
-    fetchExistingTeam
+    fetchExistingTeam,
+    addAchievementToTeam,
+    checkAchievement
 };

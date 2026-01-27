@@ -36,11 +36,44 @@ const fetchExistingSports = async (name) => {
     return result[0];
 };
 
+const getLexiconBySportId = async (idSport) => {
+    const sql = `
+        SELECT l.lexiconId, l.name, l.description, s.name AS sportName
+        FROM lexicons AS l
+        INNER JOIN lexiconsSports AS ls ON l.lexiconId = ls.idLexicon
+        INNER JOIN sports AS s ON ls.idSport = s.sportId
+        WHERE ls.idSport = ?;`;
+    const [result] = await bdd.query(sql, [idSport]);
+    return result;
+};
+
+const checkLexiconLink = async (idSport, idLexicon) => {
+    const sql = `SELECT idSport, idLexicon FROM lexiconsSports WHERE idSport = ? AND idLexicon = ?`;
+    const [result] = await bdd.query(sql, [idSport, idLexicon]);
+    return result[0];
+};
+
+const addLexiconToSport = async (idSport, idLexicon) => {
+    const sql = `INSERT INTO lexiconsSports (idSport, idLexicon) VALUES (?, ?)`;
+    const [result] = await bdd.query(sql, [idSport, idLexicon]);
+    return result;
+};
+
+const deleteLexiconFromSport = async (idSport, idLexicon) => {
+    const sql = `DELETE FROM lexiconsSports WHERE idSport = ? AND idLexicon = ?`;
+    const [result] = await bdd.query(sql, [idSport, idLexicon]);
+    return result;
+};
+
 export default {
     fetchAllSports,
     fetchSportsById,
     createSport,
     updateSport,
     deleteSport,
-    fetchExistingSports
+    fetchExistingSports,
+    getLexiconBySportId,
+    checkLexiconLink,
+    addLexiconToSport,
+    deleteLexiconFromSport
 };

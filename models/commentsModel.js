@@ -7,9 +7,11 @@ const fetchAllComments = async () => {
 };
 
 const fetchCommentsByArticle = async (idArticle) => {
-    const sql = `SELECT commentId, content, date, idUser, idArticle FROM comments 
-        WHERE idArticle = ? 
-        ORDER BY date DESC;`;
+    const sql = `SELECT c.commentId, c.content, c.date, c.idUser, c.idArticle, u.firstName, u.lastName
+    FROM comments c
+    INNER JOIN users AS u ON c.idUser = u.userId
+    WHERE c.idArticle = ? 
+    ORDER BY date DESC;`;
     const [result] = await bdd.query(sql, [idArticle]);
     return result;
 };

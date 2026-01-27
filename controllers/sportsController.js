@@ -1,4 +1,5 @@
 import sportsModel from "../models/sportsModel.js";
+import lexiconsModel from "../models/lexiconsModel.js";
 
 const getAllSports = async (req, res) => {
     try {
@@ -84,10 +85,71 @@ const deleteSport = async (req, res) => {
     }
 };
 
+const getLexiconBySport = async (req, res) => {
+    try {
+        const idSport = req.params.id;
+        const lexiconBySport = await sportsModel.getLexiconBySportId(idSport);
+
+        res.status(200).json(lexiconBySport);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la récupération du lexique" });
+    }
+};
+
+const addLexiconToSport = async (req, res) => {
+    try {
+        const idSport = req.params.id;
+        const { idLexicon } = req.body;
+
+        if (!idLexicon) {
+            return res.status(400).json({ message: "L'ID du lexique est obligatoire" });
+        }
+
+        const sportExists = await sportsModel.fetchSportsById(idSport);
+        if (!sportExists) {
+            return res.status(404).json({ message: "Sport introuvable" });
+        }
+
+        const lexiconExists = await lexiconsModel.fetchLexiconsById(idLexicon);
+        if (!lexiconExists) {
+            return res.status(404).json({ message: "Définition introuvable" });
+        }
+
+        const lexiconSportExists = await sportsModel.checkLexiconLink(idSport, idLexicon);
+        if (lexiconSportExists) {
+            return res.status(409).json({ message: "Ce mot est déjà associé à ce sport" });
+        }
+
+        const newLexiconBySport = await sportsModel.addLexiconToSport(idSport, idLexicon);
+        res.status(201).json({ message: "Définition ajoutée au sport" });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de l'ajout" });
+    }
+};
+
+const deleteLexiconFromSport = async (req, res) => {
+    try {
+        const { idSport, idLexicon } = req.params;
+
+        const dissociateSport = await sportsModel.deleteLexiconFromSport(idSport, idLexicon);
+        if (dissociateSport.affectedRows === 0) {
+            return res.status(404).json({ message: "Lien introuvable ou déjà supprimé" });
+        }
+        res.status(200).json({ message: "Définition retirée du sport" });
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({ message: "Erreur lors de la suppression" });
+    }
+};
+
 export default {
     getAllSports,
     getSportsById,
     addSport,
     updateSport,
-    deleteSport
+    deleteSport,
+    getLexiconBySport,
+    addLexiconToSport,
+    deleteLexiconFromSport
 }
