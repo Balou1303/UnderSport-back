@@ -1,7 +1,13 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllMatches = async () => {
-    const sql = `SELECT matchId, matchDate, matchTime, scoreHome, scoreAway, idHomeTeam, idAwayTeam, idChampionship FROM matches;`;
+    const sql = `SELECT m.matchId, m.matchDate, m.matchTime, m.scoreHome, m.scoreAway, m.idHomeTeam, m.idAwayTeam, m.idChampionship,
+    t1.name AS homeTeamName, t1.logo AS homeTeamLogo,
+    t2.name AS awayTeamName, t2.logo AS awayTeamLogo
+    FROM matches m
+    INNER JOIN teams AS t1 ON m.idHomeTeam = t1.teamId
+    INNER JOIN teams AS t2 ON m.idAwayTeam = t2.teamId
+    ORDER BY m.matchDate DESC;`;
     const [result] = await bdd.query(sql);
     return result;
 };
@@ -49,7 +55,17 @@ const deleteMatch = async (id) => {
     return result;
 };
 
+const addBroadcasterToMatch = async (idBroadcaster, idMatch) => {
+    const sql = `INSERT INTO broadcastersMatches (idBroadcaster, idMatch) VALUES (?, ?)`
+    const [result] = await bdd.query(sql, [idBroadcaster, idMatch]);
+    return result;
+};
 
+const checkBrodacastersMatches = async (idBroadcaster, idMatch) => {
+    const sql = `SELECT idBroadcaster, idMatch FROM broadcastersMatches WHERE idMatch = ? AND idBroadcaster = ?`;
+    const [result] = await bdd.query(sql, [idBroadcaster, idMatch]);
+    return result[0];
+};
 
 export default {
     fetchAllMatches,
@@ -58,5 +74,7 @@ export default {
     createMatch,
     updateMatch,
     updateScore,
-    deleteMatch
+    deleteMatch,
+    addBroadcasterToMatch,
+    checkBrodacastersMatches
 }

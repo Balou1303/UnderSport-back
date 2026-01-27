@@ -1,5 +1,6 @@
 import legendsModel from "../models/legendsModel.js";
 import sportsModel from "../models/sportsModel.js";
+import achievementsModel from "../models/achievementsModel.js"
 
 const getAllLegends = async (req, res) => {
     try {
@@ -14,7 +15,7 @@ const getLegendById = async (req, res) => {
     try {
         const id = req.params.id;
         const legendById = await legendsModel.fetchLegendById(id);
-        
+
         if (!legendById) {
             return res.status(404).json({ message: "Légende non trouvée" });
         }
@@ -33,8 +34,8 @@ const addLegend = async (req, res) => {
             return res.status(400).json({ message: "Le prénom, le nom et le sport de la légende sont obligatoires" });
         }
 
-        const sportExists = await sportsModel.fetchSportsById(idSport); 
-        
+        const sportExists = await sportsModel.fetchSportsById(idSport);
+
         if (!sportExists) {
             return res.status(404).json({ message: "Le sport indiqué n'existe pas" });
         }
@@ -51,7 +52,7 @@ const updateLegend = async (req, res) => {
     try {
         const id = req.params.id;
         const { firstname, lastname, photo, idSport } = req.body;
-        
+
         const legendExists = await legendsModel.fetchLegendById(id);
         if (!legendExists) {
             return res.status(404).json({ message: "Légende non trouvée" });
@@ -60,7 +61,7 @@ const updateLegend = async (req, res) => {
         if (idSport) {
             const sportExists = await sportsModel.fetchSportsById(idSport);
             if (!sportExists) {
-                 return res.status(404).json({ message: "Le nouveau sport indiqué n'existe pas" });
+                return res.status(404).json({ message: "Le nouveau sport indiqué n'existe pas" });
             }
         }
 
@@ -68,7 +69,7 @@ const updateLegend = async (req, res) => {
         res.status(200).json({ message: "Légende mise à jour" });
 
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la mise à jour de la légende" });  
+        res.status(500).json({ message: "Erreur lors de la mise à jour de la légende" });
     }
 };
 
@@ -87,10 +88,42 @@ const deleteLegend = async (req, res) => {
     }
 };
 
+const addAchievementToLegend = async (req, res) => {
+    try {
+        const idLegend = req.params.id;
+        const { idAchievement, years } = req.body;
+
+        if (!idAchievement || !years) {
+            return res.status(400).json({ message: "L'ID du palmarès et l'année sont obligatoires" })
+        }
+
+        const legendExists = await legendsModel.fetchLegendById(idLegend);
+        if (!legendExists) {
+            return res.status(404).json({ message: "La légende n'existe pas" });
+        }
+
+        const achivementExists = await achievementsModel.fetchAchievementById(idAchievement);
+        if (!achivementExists) {
+            return res.status(404).json({ message: "'Palmarès introuvable" })
+        }
+
+        const achievementsLegendExists = await legendsModel.checkAchievement(idLegend, idAchievement, years)
+        if (achievementsLegendExists) {
+            return res.status(409).json({ message: "Ce palmarès de cette année est déjà associé à cette légende" });
+        }
+
+        const newAchievementsToLegend = await legendsModel.addAchievementToLegend(idLegend, idAchievement, years)
+        return res.status(201).json({ message: "palamrès ajouté à la légende" });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de l'ajout d'un palmarès à une légende" })
+    }
+};
+
 export default {
     getAllLegends,
     getLegendById,
     addLegend,
     updateLegend,
-    deleteLegend
+    deleteLegend,
+    addAchievementToLegend
 };

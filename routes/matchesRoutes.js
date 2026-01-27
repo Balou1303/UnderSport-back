@@ -10,6 +10,8 @@ router.get('/:id', matchesController.getMatchById);
 router.post('/', checkToken, checkAdmin, matchesController.addMatch);
 router.put('/:id', checkToken, checkAdmin, matchesController.updateMatch);
 router.delete('/:id', checkToken, checkAdmin, matchesController.deleteMatch);
-router.patch('/score/:id', checkToken, checkAdmin, matchesController.updateScore);
+router.patch('/:id/score', checkToken, checkAdmin, matchesController.updateScore);
+
+router.post('/:id/broadcasters', checkToken, checkAdmin, matchesController.addBroadcasterToMatch);
 
 export default router;
