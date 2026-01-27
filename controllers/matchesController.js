@@ -1,4 +1,6 @@
+import broadcastersModel from "../models/broadcastersModel.js";
 import matchesModel from "../models/matchesModel.js";
+import broadcastersController from "./broadcastersController.js";
 
 const getAllMatches = async (req, res) => {
     try {
@@ -78,19 +80,19 @@ const updateMatch = async (req, res) => {
 };
 
 const updateScore = async (req, res) => {
-try {
-    const id = req.params.id;
-    const {scoreHome, scoreAway} = req.body;
+    try {
+        const id = req.params.id;
+        const { scoreHome, scoreAway } = req.body;
 
-    if (scoreHome === undefined || scoreAway === undefined) {
+        if (scoreHome === undefined || scoreAway === undefined) {
             res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour le score" });
             return;
         };
-        const  scoreUpdate = await matchesModel.updateScore(scoreHome, scoreAway, id)
+        const scoreUpdate = await matchesModel.updateScore(scoreHome, scoreAway, id)
         res.status(200).json(scoreUpdate);
-} catch (error) {
-    res.status(500).json({ message: "Erreur lors de la mise à jour du score" });
-}
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la mise à jour du score" });
+    }
 }
 
 const deleteMatch = async (req, res) => {
@@ -108,11 +110,43 @@ const deleteMatch = async (req, res) => {
     }
 };
 
+const addBroadcasterToMatch = async (req, res) => {
+    try {
+        const idMatch = req.params.id;
+        const { idBroadcaster } = req.body;
+
+        if (!idBroadcaster) {
+            return res.status(400).json({ message: "L'ID du diffuseur est obligatoire" })
+        }
+
+        const matchExists = await matchesModel.fetchMatchById(idMatch);
+        if (!matchExists) {
+            return res.status(404).json({ message: "Match introuvable" });
+        }
+
+        const broadcasterExists = await broadcastersModel.fetchBroadcasterById(idBroadcaster);
+        if (!broadcasterExists) {
+            return res.status(404).json({ message: "Diffuseur introuvable" });
+        }
+
+        const broadcastersMatchsExists = await matchesModel.checkBrodacastersMatches(idBroadcaster, idMatch);
+        if (broadcastersMatchsExists) {
+            return res.status(409).json({ message: "Ce match est déjà associé à ce diffuseur" });
+        }
+
+        const newMatchToBroadcaster = await matchesModel.addBroadcasterToMatch(idBroadcaster, idMatch);
+        res.status(201).json({ message: "Match ajouté à un diffuseur" });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de l'ajout d'un diffuseur à un match" })
+    }
+}
+
 export default {
     getAllMatches,
     getMatchById,
     addMatch,
     updateMatch,
     updateScore,
-    deleteMatch
+    deleteMatch,
+    addBroadcasterToMatch
 };

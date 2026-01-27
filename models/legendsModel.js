@@ -37,10 +37,26 @@ const deleteLegend = async (id) => {
     return result;
 };
 
+const addAchievementToLegend = async (idLegend, idAchievement, years) => {
+    const sql = `INSERT INTO achievementsLegends (idLegend, idAchievement, years) VALUES (?, ?, ?);`;
+    const [result] = await bdd.query(sql, [idLegend, idAchievement, years]);
+    return result;
+};
+
+// pour éviter de mettre 2 fois le même trophée la même année
+const checkAchievement = async (idLegend, idAchievement, years) => {
+    const sql = `SELECT idLegend FROM achievementsLegends
+    WHERE idLegend = ? AND idAchievement =? AND years = ?;`;
+    const [result] = await bdd.query(sql, [idLegend, idAchievement, years]);
+    return result[0];
+}
+
 export default {
     fetchAllLegends,
     fetchLegendById,
     createLegend,
     updateLegend,
-    deleteLegend
+    deleteLegend,
+    addAchievementToLegend,
+    checkAchievement
 };
