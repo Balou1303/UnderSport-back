@@ -73,7 +73,7 @@ const deleteArticle = async (req, res) => {
         } else {
             res.status(200).json({ message: "article supprimé avec succès" });
         }
-    } catch (error) {
+    } catch (error) {       
         res.status(500).json({ message: "Erreur lors de la suppression du article" });
     }
 };
@@ -106,6 +106,7 @@ const deleteSportFromArticle = async (req, res) => {
         res.status(200).json({ message: "Sport retiré de l'article" });
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: "Erreur lors du retrait du sport de l'article" });
     }
 };
