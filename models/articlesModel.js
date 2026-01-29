@@ -1,20 +1,39 @@
 import bdd from "../config/bdd.js";
 
+// const fetchAllArticles = async () => {
+//     const sql = `
+//         SELECT 
+//         a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
+//         u.firstName, u.lastName,
+//         GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
+//         c.name AS championshipName -- Le championnat (ex: NBA)
+//         FROM articles a
+//         JOIN users u ON a.idUser = u.userId
+//         LEFT JOIN sportsArticles sa ON a.articleId = sa.idArticle
+//         LEFT JOIN sports s ON sa.idSport = s.sportId
+//         LEFT JOIN championships c ON a.idChampionship = c.championshipId
+//         GROUP BY a.articleId;`;
+
+//     const [result] = await bdd.query(sql);
+//     return result;
+// };
+
 const fetchAllArticles = async () => {
     const sql = `
         SELECT 
-        a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
-        u.firstName, u.lastName,
-        GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
-        c.name AS championshipName -- Le championnat (ex: NBA)
+            a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
+            a.isFeatured,
+            u.firstName, u.lastName,
+            GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
+            c.name AS championshipName
         FROM articles a
         JOIN users u ON a.idUser = u.userId
         LEFT JOIN sportsArticles sa ON a.articleId = sa.idArticle
         LEFT JOIN sports s ON sa.idSport = s.sportId
         LEFT JOIN championships c ON a.idChampionship = c.championshipId
-        GROUP BY a.articleId;
-    `;
-
+        GROUP BY a.articleId, u.firstName, u.lastName, c.name, a.isFeatured, a.publicationDate
+        ORDER BY a.isFeatured DESC, a.publicationDate DESC;`;
+        
     const [result] = await bdd.query(sql);
     return result;
 };
@@ -104,6 +123,16 @@ const getArticleByPopularity = async () => {
     return result
 }
 
+const setFeatured = async (articleId) => {
+    // permet de tout remettre à 0
+    await bdd.query("UPDATE articles SET isFeatured = 0");
+
+    // permet de mettre l'article sélectionné à "la Une"
+    const sql = "UPDATE articles SET isFeatured = 1 WHERE articleId = ?";
+    const [result] = await bdd.query(sql, [articleId]);
+    return result;
+};
+
 export default {
     fetchAllArticles,
     fetchArticleById,
@@ -115,5 +144,6 @@ export default {
     removeSportFromArticle,
     getSportsByArticleId,
     getArticlesBySport,
-    getArticleByPopularity
+    getArticleByPopularity,
+    setFeatured
 };

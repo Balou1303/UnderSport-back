@@ -18,4 +18,6 @@ router.get('/filter/sports/:idSport', articlesController.getArticlesBySport);
 router.post('/sports', checkToken, checkEditor, articlesController.addSportToArticle);
 router.delete('/:idArticle/sports/:idSport', checkToken, checkEditor, articlesController.deleteSportFromArticle);
 
+router.patch('/:id/featured', checkToken,checkAdmin, articlesController.defineFeatured);
+
 export default router;
