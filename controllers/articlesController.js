@@ -27,14 +27,14 @@ const getArticleById = async (req, res) => {
 
 const addArticle = async (req, res) => {
     try {
-        const { title, content, picture } = req.body; 
+        const { title, content, picture, idChampionship } = req.body; 
         const idUser = req.user.id;
 
         if (!title || !content) {
              return res.status(400).json({ message: "Les champs titre et contenu sont obligatoires" });
         }
 
-        const newArticle = await articlesModel.createArticle(title, content, picture, idUser);
+        const newArticle = await articlesModel.createArticle(title, content, picture, idUser, idChampionship);
         
         res.status(201).json(newArticle);
     } catch (error) {
@@ -45,14 +45,14 @@ const addArticle = async (req, res) => {
 const updateArticle = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, content, picture } = req.body;
+        const { title, content, picture, idChampionship } = req.body;
 
         if (!title || !content) {
             res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
             return;
         };
 
-        const articleUpdate = await articlesModel.updateArticle(title, content, picture, id);
+        const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
         if (articleUpdate.affectedRows === 0) {
             res.status(404).json({ message: "article non trouvée" });
         } else {

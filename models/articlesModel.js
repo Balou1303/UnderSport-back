@@ -2,9 +2,17 @@ import bdd from "../config/bdd.js";
 
 const fetchAllArticles = async () => {
     const sql = `
-        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName  
+        SELECT 
+        a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
+        u.firstName, u.lastName,
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
+        c.name AS championshipName -- Le championnat (ex: NBA)
         FROM articles a
-        JOIN users u ON a.idUser = u.userId;
+        JOIN users u ON a.idUser = u.userId
+        LEFT JOIN sportsArticles sa ON a.articleId = sa.idArticle
+        LEFT JOIN sports s ON sa.idSport = s.sportId
+        LEFT JOIN championships c ON a.idChampionship = c.championshipId
+        GROUP BY a.articleId;
     `;
 
     const [result] = await bdd.query(sql);
@@ -22,21 +30,21 @@ const fetchArticleById = async (id) => {
     return result[0];
 };
 
-const createArticle = async (title, content, picture, idUser) => {
+const createArticle = async (title, content, picture, idUser, idChampionship) => {
     const sql = `
-        INSERT INTO articles (title, content, picture, idUser) 
-        VALUES (?, ?, ?, ?);`;
-    const [result] = await bdd.query(sql, [title, content, picture, idUser]);
+        INSERT INTO articles (title, content, picture, idUser, idChampionship) 
+        VALUES (?, ?, ?, ?, ?);`;
+    const [result] = await bdd.query(sql, [title, content, picture, idUser, idChampionship]);
     return result;
 };
 
-const updateArticle = async (title, content, picture, id) => {
+const updateArticle = async (title, content, picture, idChampionship, id) => {
     // SQL va mettre à jour 'updateDate' tout seul grâce à 'ON UPDATE CURRENT_TIMESTAMP'
     const sql = `
         UPDATE articles 
-        SET title = ?, content = ?, picture = ? 
+        SET title = ?, content = ?, picture = ?, idChampionship = ?
         WHERE articleId = ?;`;
-    const [result] = await bdd.query(sql, [title, content, picture, id]);
+    const [result] = await bdd.query(sql, [title, content, picture, idChampionship, id]);
     return result;
 };
 
@@ -86,7 +94,7 @@ const getArticlesBySport = async (idSport) => {
     return result;
 };
 
-const getArticleByPopularity = async() => {
+const getArticleByPopularity = async () => {
     const sql = `SELECT a.articleId, a.title, a.publicationDate, COUNT (c.commentId) AS totalComment
     FROM articles a
     LEFT JOIN comments AS c ON a.articleId = c.idArticle
