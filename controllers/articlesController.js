@@ -142,6 +142,17 @@ const getPopularity = async (req, res) => {
     }
 };
 
+const defineFeatured = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await articlesModel.setFeatured(id);
+        res.json({ message: "Article mis à la une avec succès !" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur de la mise à la une de l'article" });
+    }
+};
+
 export default {
     getAllArticles,
     getArticleById,
@@ -152,5 +163,6 @@ export default {
     deleteSportFromArticle,
     getSportsByArticle,
     getArticlesBySport,
-    getPopularity
+    getPopularity,
+    defineFeatured
 };
