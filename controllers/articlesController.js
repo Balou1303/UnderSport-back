@@ -16,7 +16,7 @@ const getArticleById = async (req, res) => {
 
         if (!articleById) {
             res.status(404).json({ message: "article non trouvé" });
-            return;            
+            return;
         }
         res.status(200).json(articleById);
 
@@ -27,18 +27,23 @@ const getArticleById = async (req, res) => {
 
 const addArticle = async (req, res) => {
     try {
-        const { title, content, picture, idChampionship } = req.body; 
+        const { title, content, picture, idChampionship } = req.body;
+        const sportId = req.body.sports[0];
         const idUser = req.user.id;
 
         if (!title || !content) {
-             return res.status(400).json({ message: "Les champs titre et contenu sont obligatoires" });
+            return res.status(400).json({ message: "Les champs titre et contenu sont obligatoires" });
         }
 
         const newArticle = await articlesModel.createArticle(title, content, picture, idUser, idChampionship);
+        const articleId = newArticle.insertId;
         
+        await articlesModel.addSportToArticle(articleId, sportId);
+
         res.status(201).json(newArticle);
     } catch (error) {
-        res.status(500).json({ message: "Erreur..." });
+        console.error(error);
+        res.status(500).json({ message: "Erreur...", error });
     }
 };
 
@@ -46,20 +51,43 @@ const updateArticle = async (req, res) => {
     try {
         const id = req.params.id;
         const { title, content, picture, idChampionship } = req.body;
+        
+        // 1. On récupère le sport sélectionné (comme dans addArticle)
+        const sportId = (req.body.sports && req.body.sports.length > 0) ? req.body.sports[0] : null;
 
         if (!title || !content) {
-            res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
-            return;
+            return res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
         };
 
+        // 2. Mise à jour des infos de base
         const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
-        if (articleUpdate.affectedRows === 0) {
-            res.status(404).json({ message: "article non trouvée" });
-        } else {
-            res.status(200).json({ message: "article mis à jour avec succès" });
+
+        // 3. GESTION DU SPORT (Nettoyage + Ajout)
+        if (sportId) {
+            // A. On regarde s'il y a déjà des sports liés
+            const currentSports = await articlesModel.getSportsByArticleId(id);
+
+            // B. Si oui, on les supprime tous pour éviter les doublons (Basket + Foot)
+            if (currentSports && currentSports.length > 0) {
+                for (const sport of currentSports) {
+                    await articlesModel.removeSportFromArticle(id, sport.sportId);
+                }
+            }
+
+            // C. On ajoute le nouveau sport
+            await articlesModel.addSportToArticle(id, sportId);
         }
+
+        // 4. Vérification et Réponse
+        if (articleUpdate.affectedRows === 0) {
+            res.status(404).json({ message: "Article non trouvé" });
+        } else {
+            res.status(200).json({ message: "Article mis à jour avec succès" });
+        }
+
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la mise à jour du article" });
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la mise à jour de l'article" });
     };
 };
 
@@ -73,7 +101,7 @@ const deleteArticle = async (req, res) => {
         } else {
             res.status(200).json({ message: "article supprimé avec succès" });
         }
-    } catch (error) {       
+    } catch (error) {
         res.status(500).json({ message: "Erreur lors de la suppression du article" });
     }
 };
@@ -122,11 +150,11 @@ const getSportsByArticle = async (req, res) => {
 
 const getArticlesBySport = async (req, res) => {
     try {
-       const{idSport} = req.params;
-       const articlesBySport = await articlesModel.getArticlesBySport(idSport);
-       res.status(200).json(articlesBySport) 
+        const { idSport } = req.params;
+        const articlesBySport = await articlesModel.getArticlesBySport(idSport);
+        res.status(200).json(articlesBySport)
     } catch (error) {
-        res.status(500).json({message: "Erreur lors de la récupération des articles par sports"});
+        res.status(500).json({ message: "Erreur lors de la récupération des articles par sports" });
     }
 }
 
@@ -134,7 +162,7 @@ const getPopularity = async (req, res) => {
     try {
         const result = await articlesModel.getArticleByPopularity();
         res.status(200).json(result);
-    } catch (error) {      
+    } catch (error) {
         res.status(500).json({ message: "Erreur lors de l'analyse de popularité" });
     }
 };
