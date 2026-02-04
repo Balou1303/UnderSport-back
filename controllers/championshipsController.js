@@ -79,9 +79,7 @@ const deleteChampionship = async (req, res) => {
         } else {
             res.status(200).json({ message: "Championnat supprimé avec succès" });
         }
-    } catch (error) {
-        console.log(error);
-        
+    } catch (error) {        
         res.status(500).json({ message: "Erreur lors de la suppression du championnat" });
     }
 };

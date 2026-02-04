@@ -83,8 +83,6 @@ const deleteLexicon = async (req, res) => {
             res.status(200).json({ message: "Lexique supprimé" });
         }
     } catch (error) {
-        console.log(error);
-        
         res.status(500).json({ message: "Erreur lors de la suppression du lexique" });
     }
 };

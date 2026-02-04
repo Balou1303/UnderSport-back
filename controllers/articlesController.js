@@ -106,7 +106,6 @@ const deleteSportFromArticle = async (req, res) => {
         res.status(200).json({ message: "Sport retiré de l'article" });
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "Erreur lors du retrait du sport de l'article" });
     }
 };
@@ -135,9 +134,7 @@ const getPopularity = async (req, res) => {
     try {
         const result = await articlesModel.getArticleByPopularity();
         res.status(200).json(result);
-    } catch (error) {
-        console.log(error);
-        
+    } catch (error) {      
         res.status(500).json({ message: "Erreur lors de l'analyse de popularité" });
     }
 };
