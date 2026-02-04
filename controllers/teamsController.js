@@ -113,7 +113,6 @@ const addAchievementToTeam = async (req, res) => {
         res.status(201).json({ message: "Palmarès ajouté à l'équipe" });
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "Erreur serveur lors de l'ajout du palmarès" });
     }
 };

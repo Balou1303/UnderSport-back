@@ -80,7 +80,6 @@ const getRulesBySport = async (req, res) => {
         const rules = await rulesModel.getRulesBySportId(idSport);
         res.status(200).json(rules);
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "Erreur serveur" });
     }
 };
@@ -100,7 +99,6 @@ const addRuleToSport = async (req, res) => {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ message: "Cette règle est déjà associée à ce sport" });
         }
-        console.log(error);
         res.status(500).json({ message: "Erreur serveur" });
     }
 };
@@ -113,7 +111,6 @@ const deleteRuleFromSport = async (req, res) => {
         res.status(200).json({ message: "Règle dissociée du sport" });
 
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "Erreur serveur" });
     }
 };
