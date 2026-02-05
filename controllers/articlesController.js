@@ -37,7 +37,7 @@ const addArticle = async (req, res) => {
 
         const newArticle = await articlesModel.createArticle(title, content, picture, idUser, idChampionship);
         const articleId = newArticle.insertId;
-        
+
         await articlesModel.addSportToArticle(articleId, sportId);
 
         res.status(201).json(newArticle);
@@ -51,34 +51,29 @@ const updateArticle = async (req, res) => {
     try {
         const id = req.params.id;
         const { title, content, picture, idChampionship } = req.body;
-        
-        // 1. On récupère le sport sélectionné (comme dans addArticle)
+
+        //  On récupère le sport sélectionné (comme dans addArticle)
         const sportId = (req.body.sports && req.body.sports.length > 0) ? req.body.sports[0] : null;
 
         if (!title || !content) {
             return res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
         };
 
-        // 2. Mise à jour des infos de base
         const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
-
-        // 3. GESTION DU SPORT (Nettoyage + Ajout)
         if (sportId) {
-            // A. On regarde s'il y a déjà des sports liés
+            // On regarde s'il y a déjà des sports liés
             const currentSports = await articlesModel.getSportsByArticleId(id);
 
-            // B. Si oui, on les supprime tous pour éviter les doublons (Basket + Foot)
+            // Si oui, on les supprime tous pour éviter les doublons (Basket + Foot)
             if (currentSports && currentSports.length > 0) {
                 for (const sport of currentSports) {
                     await articlesModel.removeSportFromArticle(id, sport.sportId);
                 }
             }
 
-            // C. On ajoute le nouveau sport
             await articlesModel.addSportToArticle(id, sportId);
         }
-
-        // 4. Vérification et Réponse
+        
         if (articleUpdate.affectedRows === 0) {
             res.status(404).json({ message: "Article non trouvé" });
         } else {
