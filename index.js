@@ -1,11 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-
-// 1. IMPORT DES OUTILS POUR LES CHEMINS (C'est ce qu'il manquait)
 import path from 'path';
 import { fileURLToPath } from 'url';
-
 import usersRoutes from './routes/usersRoutes.js';
 import sportsRoutes from './routes/sportsRoutes.js';
 import rulesRoutes from "./routes/rulesRoutes.js";
@@ -21,7 +18,7 @@ import lexiconsRoutes from "./routes/lexiconsRoutes.js";
 
 dotenv.config();
 
-// 2. CONFIGURATION DU CHEMIN (Indispensable pour que Node trouve le dossier)
+// CONFIGURATION DU CHEMIN (Indispensable pour que Node trouve le dossier)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -30,8 +27,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 3. LA LIGNE MAGIQUE : On ouvre le dossier "assets" au public
-app.use(express.static(path.join(__dirname, 'assets')));
+// On dit : "Quand l'URL commence par /images, va chercher dans le dossier physique public/images"
+app.use('/images', express.static(path.join(__dirname, 'public/picture')));
 
 app.get("/", (req, res) => {
     res.json({ message: "Bienvenue dans l'API UnderSport 🏀​" })

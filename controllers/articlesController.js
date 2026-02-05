@@ -27,9 +27,19 @@ const getArticleById = async (req, res) => {
 
 const addArticle = async (req, res) => {
     try {
-        const { title, content, picture, idChampionship } = req.body;
+        const { title, content } = req.body;
         const sportId = req.body.sports[0];
         const idUser = req.user.id;
+
+        const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined"
+            ? null
+            : req.body.idChampionship;
+
+        let picture = null;
+        // Si Multer a attrapé un fichier, on met à jour le chemin
+        if (req.file) {
+            picture = `/images/${req.file.filename}`;
+        }
 
         if (!title || !content) {
             return res.status(400).json({ message: "Les champs titre et contenu sont obligatoires" });
@@ -50,10 +60,22 @@ const addArticle = async (req, res) => {
 const updateArticle = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, content, picture, idChampionship } = req.body;
+        const { title, content } = req.body;
+        const sportId = req.body.sports[0];
 
-        //  On récupère le sport sélectionné (comme dans addArticle)
-        const sportId = (req.body.sports && req.body.sports.length > 0) ? req.body.sports[0] : null;
+        const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined" 
+            ? null 
+            : req.body.idChampionship;
+
+        let picture;
+
+        if (req.file) {
+            // CAS 1 : Il y a un nouveau fichier, on prend son chemin
+            picture = `/images/${req.file.filename}`;
+        } else {
+            // CAS 2 : Pas de nouveau fichier, on garde l'URL existante
+            picture = req.body.picture;
+        }
 
         if (!title || !content) {
             return res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
@@ -70,10 +92,9 @@ const updateArticle = async (req, res) => {
                     await articlesModel.removeSportFromArticle(id, sport.sportId);
                 }
             }
-
             await articlesModel.addSportToArticle(id, sportId);
         }
-        
+
         if (articleUpdate.affectedRows === 0) {
             res.status(404).json({ message: "Article non trouvé" });
         } else {
