@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.get('/', articlesController.getAllArticles);
 router.get('/popularity', checkToken, checkAdmin, articlesController.getPopularity);
+router.get('/stats', checkToken, checkAdmin, articlesController.getStats);
 router.get('/:id', articlesController.getArticleById);
 router.post('/', checkToken, multerConfig, checkEditor, articlesController.addArticle);
 router.put('/:id', checkToken, multerConfig, checkEditor, articlesController.updateArticle);
