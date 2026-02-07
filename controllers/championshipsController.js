@@ -25,7 +25,13 @@ const getChampionShipsById = async (req, res) => {
 
 const addChampionShip = async (req, res) => {
     try {
-        const { name, logo, idSport } = req.body;
+        const { name, idSport } = req.body;
+
+        let logo = null;
+        if (req.file) {
+            logo = `/images/${req.file.filename}`;
+        }
+
         if (!name || !idSport) {
             res.status(400).json({ message: "Le champ est obligatoire" });
             return;
@@ -35,7 +41,8 @@ const addChampionShip = async (req, res) => {
             res.status(409).json({ message: "Le championnat existe déja" });
             return;
         };
-        const createChampionship = await championshipsModel.createChampionship(name, logo, idSport);
+
+        await championshipsModel.createChampionship(name, logo, idSport);
         res.status(201).json({ message: "Championnat créé avec succès" });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la création du championnat" });
@@ -45,7 +52,13 @@ const addChampionShip = async (req, res) => {
 const updateChampionship = async (req, res) => {
     try {
         const id = req.params.id;
-        const { name, logo, idSport } = req.body;
+        const { name, idSport } = req.body;
+
+        let logo = req.body.logo; // Par défaut, on garde l'ancien logo
+        if (req.file) {
+            // Si un nouveau fichier est uploadé, on remplace le chemin
+            logo = `/images/${req.file.filename}`; 
+        }
 
         if (!name || !idSport) {
             res.status(400).json({ message: 'Un championnat et un sport sont obligatoires' });
@@ -79,10 +92,23 @@ const deleteChampionship = async (req, res) => {
         } else {
             res.status(200).json({ message: "Championnat supprimé avec succès" });
         }
-    } catch (error) {        
+    } catch (error) {
         res.status(500).json({ message: "Erreur lors de la suppression du championnat" });
     }
 };
+
+const championshipBySportId = async (req, res) => {
+    try {
+        const id = req.params.idSport;
+        const result = await championshipsModel.fetchChampionshipsBySportId(id);
+        
+        res.status(200).json(result); 
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la récupération du championnat par sport" })
+    }
+}
 
 export default {
     getAllChampionships,
@@ -90,4 +116,5 @@ export default {
     addChampionShip,
     updateChampionship,
     deleteChampionship,
+    championshipBySportId
 }
