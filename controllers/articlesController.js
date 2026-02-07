@@ -194,6 +194,16 @@ const defineFeatured = async (req, res) => {
     }
 };
 
+const getStats = async (req, res) => {
+    try {
+        const stats = await articlesModel.getDashboardStats();
+        res.status(200).json(stats);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la récupération des statistiques" });
+    }
+};
+
 export default {
     getAllArticles,
     getArticleById,
@@ -205,5 +215,6 @@ export default {
     getSportsByArticle,
     getArticlesBySport,
     getPopularity,
-    defineFeatured
+    defineFeatured,
+    getStats
 };
