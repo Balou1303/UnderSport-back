@@ -1,28 +1,10 @@
 import bdd from "../config/bdd.js";
 
-// const fetchAllArticles = async () => {
-//     const sql = `
-//         SELECT 
-//         a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
-//         u.firstName, u.lastName,
-//         GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
-//         c.name AS championshipName -- Le championnat (ex: NBA)
-//         FROM articles a
-//         JOIN users u ON a.idUser = u.userId
-//         LEFT JOIN sportsArticles sa ON a.articleId = sa.idArticle
-//         LEFT JOIN sports s ON sa.idSport = s.sportId
-//         LEFT JOIN championships c ON a.idChampionship = c.championshipId
-//         GROUP BY a.articleId;`;
-
-//     const [result] = await bdd.query(sql);
-//     return result;
-// };
-
 const fetchAllArticles = async () => {
     const sql = `
         SELECT 
             a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
-            a.isFeatured,
+            a.isFeatured, a.views,
             u.firstName, u.lastName,
             GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
             c.name AS championshipName
@@ -31,7 +13,7 @@ const fetchAllArticles = async () => {
         LEFT JOIN sportsArticles sa ON a.articleId = sa.idArticle
         LEFT JOIN sports s ON sa.idSport = s.sportId
         LEFT JOIN championships c ON a.idChampionship = c.championshipId
-        GROUP BY a.articleId, u.firstName, u.lastName, c.name, a.isFeatured, a.publicationDate
+        GROUP BY a.articleId, u.firstName, u.lastName, c.name, a.isFeatured, a.publicationDate, a.views
         ORDER BY a.isFeatured DESC, a.publicationDate DESC;`;
         
     const [result] = await bdd.query(sql);
@@ -39,8 +21,9 @@ const fetchAllArticles = async () => {
 };
 
 const fetchArticleById = async (id) => {
+    await bdd.query("UPDATE articles SET views = views + 1 WHERE articleId = ?", [id]);
     const sql = `
-        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, u.firstName, u.lastName
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, a.views, u.firstName, u.lastName
         FROM articles a
         JOIN users u ON a.idUser = u.userId
         WHERE articleId = ?;
@@ -91,6 +74,12 @@ const removeSportFromArticle = async (idArticle, idSport) => {
     return result;
 };
 
+const removeAllSportsFromArticle = async (idArticle) => {
+    const sql = `DELETE FROM sportsArticles WHERE idArticle = ?`;
+    const [result] = await bdd.query(sql, [idArticle]);
+    return result;
+};
+
 
 const getSportsByArticleId = async (idArticle) => {
     const sql = `
@@ -133,6 +122,27 @@ const setFeatured = async (articleId) => {
     return result;
 };
 
+const getDashboardStats = async () => {
+    // Articles publiés les 7 derniers jours
+    const sqlWeek = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
+    
+    // Articles publiés les 30 derniers jours
+    const sqlMonth = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 1 MONTH)`;
+    
+    // Total des vues
+    const sqlViews = `SELECT SUM(views) as totalViews FROM articles`;
+
+    const [resultWeek] = await bdd.query(sqlWeek);
+    const [resultMonth] = await bdd.query(sqlMonth);
+    const [resultViews] = await bdd.query(sqlViews);
+
+    return {
+        articlesLastWeek: resultWeek[0].count,
+        articlesLastMonth: resultMonth[0].count,
+        totalViews: resultViews[0].totalViews || 0 // Si null (0 vues), on renvoie 0
+    };
+};
+
 export default {
     fetchAllArticles,
     fetchArticleById,
@@ -142,8 +152,10 @@ export default {
     checkAuthorExists,
     addSportToArticle,
     removeSportFromArticle,
+    removeAllSportsFromArticle,
     getSportsByArticleId,
     getArticlesBySport,
     getArticleByPopularity,
-    setFeatured
+    setFeatured,
+    getDashboardStats
 };

@@ -27,9 +27,19 @@ const getArticleById = async (req, res) => {
 
 const addArticle = async (req, res) => {
     try {
-        const { title, content, picture, idChampionship } = req.body;
+        const { title, content } = req.body;
         const sportId = req.body.sports[0];
         const idUser = req.user.id;
+
+        const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined"
+            ? null
+            : req.body.idChampionship;
+
+        let picture = null;
+        // Si Multer a attrapé un fichier, on met à jour le chemin
+        if (req.file) {
+            picture = `/images/${req.file.filename}`;
+        }
 
         if (!title || !content) {
             return res.status(400).json({ message: "Les champs titre et contenu sont obligatoires" });
@@ -50,10 +60,22 @@ const addArticle = async (req, res) => {
 const updateArticle = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, content, picture, idChampionship } = req.body;
+        const { title, content } = req.body;
+        const sportId = req.body.sports[0];
 
-        //  On récupère le sport sélectionné (comme dans addArticle)
-        const sportId = (req.body.sports && req.body.sports.length > 0) ? req.body.sports[0] : null;
+        const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined" 
+            ? null 
+            : req.body.idChampionship;
+
+        let picture;
+
+        if (req.file) {
+            // CAS 1 : Il y a un nouveau fichier, on prend son chemin
+            picture = `/images/${req.file.filename}`;
+        } else {
+            // CAS 2 : Pas de nouveau fichier, on garde l'URL existante
+            picture = req.body.picture;
+        }
 
         if (!title || !content) {
             return res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
@@ -61,19 +83,12 @@ const updateArticle = async (req, res) => {
 
         const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
         if (sportId) {
-            // On regarde s'il y a déjà des sports liés
-            const currentSports = await articlesModel.getSportsByArticleId(id);
-
-            // Si oui, on les supprime tous pour éviter les doublons (Basket + Foot)
-            if (currentSports && currentSports.length > 0) {
-                for (const sport of currentSports) {
-                    await articlesModel.removeSportFromArticle(id, sport.sportId);
-                }
-            }
-
+            //supprime les anciens liens de sport pour cet article
+            await articlesModel.removeAllSportsFromArticle(id);
+            //ajoute le nouveau sport
             await articlesModel.addSportToArticle(id, sportId);
         }
-        
+
         if (articleUpdate.affectedRows === 0) {
             res.status(404).json({ message: "Article non trouvé" });
         } else {
@@ -173,6 +188,16 @@ const defineFeatured = async (req, res) => {
     }
 };
 
+const getStats = async (req, res) => {
+    try {
+        const stats = await articlesModel.getDashboardStats();
+        res.status(200).json(stats);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la récupération des statistiques" });
+    }
+};
+
 export default {
     getAllArticles,
     getArticleById,
@@ -184,5 +209,6 @@ export default {
     getSportsByArticle,
     getArticlesBySport,
     getPopularity,
-    defineFeatured
+    defineFeatured,
+    getStats
 };
