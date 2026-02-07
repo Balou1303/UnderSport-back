@@ -21,9 +21,9 @@ const fetchAllArticles = async () => {
 };
 
 const fetchArticleById = async (id) => {
-    await bdd.query("UPDATE articles SET views = views + 1 WHERE articleId = ?", [id]);
     const sql = `
-        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, a.views, u.firstName, u.lastName
+        SELECT a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, a.views, a.idChampionship,
+        u.firstName, u.lastName
         FROM articles a
         JOIN users u ON a.idUser = u.userId
         WHERE articleId = ?;
@@ -40,8 +40,13 @@ const createArticle = async (title, content, picture, idUser, idChampionship) =>
     return result;
 };
 
+const incrementViews = async (id) => {
+    const sql = `UPDATE articles SET views = views + 1 WHERE articleId = ?`;
+    await bdd.query(sql, [id]);
+};
+
 const updateArticle = async (title, content, picture, idChampionship, id) => {
-    // SQL va mettre à jour 'updateDate' tout seul grâce à 'ON UPDATE CURRENT_TIMESTAMP'
+    // Mise à jour automatique de 'updateDate' grâce à 'ON UPDATE CURRENT_TIMESTAMP'
     const sql = `
         UPDATE articles 
         SET title = ?, content = ?, picture = ?, idChampionship = ?
@@ -157,5 +162,6 @@ export default {
     getArticlesBySport,
     getArticleByPopularity,
     setFeatured,
-    getDashboardStats
+    getDashboardStats,
+    incrementViews
 };
