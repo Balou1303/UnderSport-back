@@ -12,7 +12,13 @@ const getAllArticles = async (req, res) => {
 const getArticleById = async (req, res) => {
     try {
         const id = req.params.id;
+        // si admin = true, considère que c'est le mode "amdin"
+        const isAdminMode = req.query.admin === 'true';
         const articleById = await articlesModel.fetchArticleById(id);
+        // incrément les vues seulement si pas dans le mode "admin"
+        if (!isAdminMode) {
+            await articlesModel.incrementViews(id);
+        }
 
         if (!articleById) {
             res.status(404).json({ message: "article non trouvé" });
@@ -27,16 +33,18 @@ const getArticleById = async (req, res) => {
 
 const addArticle = async (req, res) => {
     try {
-        const { title, content } = req.body;
-        const sportId = req.body.sports[0];
-        const idUser = req.user.id;
+        const { title, content, idSport } = req.body;
+        const idUser = req.user ? req.user.id : null;
+
+        if (!idUser)
+            return res.status(401).json({ message: "Utilisateur non identifié" });
 
         const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined"
             ? null
             : req.body.idChampionship;
 
         let picture = null;
-        // Si Multer a attrapé un fichier, on met à jour le chemin
+        // Si Multer a un fichier, on met à jour le chemin
         if (req.file) {
             picture = `/images/${req.file.filename}`;
         }
@@ -48,7 +56,9 @@ const addArticle = async (req, res) => {
         const newArticle = await articlesModel.createArticle(title, content, picture, idUser, idChampionship);
         const articleId = newArticle.insertId;
 
-        await articlesModel.addSportToArticle(articleId, sportId);
+        if (idSport) {
+            await articlesModel.addSportToArticle(articleId, idSport);
+        }
 
         res.status(201).json(newArticle);
     } catch (error) {
@@ -60,20 +70,19 @@ const addArticle = async (req, res) => {
 const updateArticle = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, content } = req.body;
-        const sportId = req.body.sports[0];
+        const { title, content, idSport } = req.body
 
-        const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined" 
-            ? null 
+        const idChampionship = req.body.idChampionship === "" || req.body.idChampionship === "undefined"
+            ? null
             : req.body.idChampionship;
 
         let picture;
 
         if (req.file) {
-            // CAS 1 : Il y a un nouveau fichier, on prend son chemin
+            // S'il y a un nouveau fichier, on prend son chemin
             picture = `/images/${req.file.filename}`;
         } else {
-            // CAS 2 : Pas de nouveau fichier, on garde l'URL existante
+            // Si il n'y pas de nouveau fichier, on garde l'URL existante
             picture = req.body.picture;
         }
 
@@ -82,11 +91,11 @@ const updateArticle = async (req, res) => {
         };
 
         const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
-        if (sportId) {
+        if (idSport && idSport !== "undefined" && idSport !== "") {
             //supprime les anciens liens de sport pour cet article
             await articlesModel.removeAllSportsFromArticle(id);
             //ajoute le nouveau sport
-            await articlesModel.addSportToArticle(id, sportId);
+            await articlesModel.addSportToArticle(id, idSport);
         }
 
         if (articleUpdate.affectedRows === 0) {
