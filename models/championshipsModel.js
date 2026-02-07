@@ -1,7 +1,10 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllChampionships = async () => {
-    const sql = `SELECT championshipId, name, logo, idSport FROM championships;`;
+    const sql = `SELECT c.championshipId, c.name, c.logo, c.idSport, s.name AS sportName
+        FROM championships c
+        JOIN sports s ON c.idSport = s.sportId
+        ORDER BY s.name ASC, c.name ASC;`;
     const [result] = await bdd.query(sql)
     return result;
 };
@@ -36,11 +39,18 @@ const fetchExistingChampionship = async (name, idSport) => {
     return result[0];
 };
 
+const fetchChampionshipsBySportId = async (idSport) => {
+    const sql = `SELECT championshipId, name FROM championships WHERE idSport = ? ORDER BY name ASC`;
+    const [result] = await bdd.query(sql, [idSport]);
+    return result;
+};
+
 export default {
     fetchAllChampionships,
     fetchChampionshipById,
     createChampionship,
     updateChampionship,
     deleteChampionship,
-    fetchExistingChampionship
+    fetchExistingChampionship,
+    fetchChampionshipsBySportId
 };
