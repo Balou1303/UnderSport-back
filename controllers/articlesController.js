@@ -83,15 +83,9 @@ const updateArticle = async (req, res) => {
 
         const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
         if (sportId) {
-            // On regarde s'il y a déjà des sports liés
-            const currentSports = await articlesModel.getSportsByArticleId(id);
-
-            // Si oui, on les supprime tous pour éviter les doublons (Basket + Foot)
-            if (currentSports && currentSports.length > 0) {
-                for (const sport of currentSports) {
-                    await articlesModel.removeSportFromArticle(id, sport.sportId);
-                }
-            }
+            //supprime les anciens liens de sport pour cet article
+            await articlesModel.removeAllSportsFromArticle(id);
+            //ajoute le nouveau sport
             await articlesModel.addSportToArticle(id, sportId);
         }
 
