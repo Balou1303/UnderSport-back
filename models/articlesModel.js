@@ -74,6 +74,12 @@ const removeSportFromArticle = async (idArticle, idSport) => {
     return result;
 };
 
+const removeAllSportsFromArticle = async (idArticle) => {
+    const sql = `DELETE FROM sportsArticles WHERE idArticle = ?`;
+    const [result] = await bdd.query(sql, [idArticle]);
+    return result;
+};
+
 
 const getSportsByArticleId = async (idArticle) => {
     const sql = `
@@ -146,6 +152,7 @@ export default {
     checkAuthorExists,
     addSportToArticle,
     removeSportFromArticle,
+    removeAllSportsFromArticle,
     getSportsByArticleId,
     getArticlesBySport,
     getArticleByPopularity,
