@@ -1,2 +1,7 @@
 node_modules/
 .env
+# Ignorer tout le contenu du dossier picture
+public/picture/*
+
+# ... MAIS ne pas ignorer le fichier .gitkeep (pour garder le dossier)
+!public/picture/.gitkeep

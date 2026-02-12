@@ -1,9 +1,6 @@
 import usersModel from "../models/usersModel.js"
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const getAllUsers = async (req, res) => {
     try {
