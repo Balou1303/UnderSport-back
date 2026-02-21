@@ -28,7 +28,12 @@ const getLegendById = async (req, res) => {
 
 const addLegend = async (req, res) => {
     try {
-        const { firstname, lastname, photo, idSport } = req.body;
+        const { firstname, lastname, idSport, description } = req.body;
+
+        let photo = null;
+        if (req.file) {
+            photo = `/images/${req.file.filename}`;
+        }
 
         if (!firstname || !lastname || !idSport) {
             return res.status(400).json({ message: "Le prénom, le nom et le sport de la légende sont obligatoires" });
@@ -40,7 +45,7 @@ const addLegend = async (req, res) => {
             return res.status(404).json({ message: "Le sport indiqué n'existe pas" });
         }
 
-        const newLegend = await legendsModel.createLegend(firstname, lastname, photo, idSport);
+        const newLegend = await legendsModel.createLegend(firstname, lastname, photo, idSport, description);
         res.status(201).json({ message: "Légende créée", id: newLegend.insertId });
 
     } catch (error) {
@@ -51,7 +56,14 @@ const addLegend = async (req, res) => {
 const updateLegend = async (req, res) => {
     try {
         const id = req.params.id;
-        const { firstname, lastname, photo, idSport } = req.body;
+        const { firstname, lastname, idSport, description } = req.body;
+
+        let photo;
+        if (req.file) {
+            photo = `/images/${req.file.filename}`;
+        } else {
+            photo = req.body.photo;
+        }
 
         const legendExists = await legendsModel.fetchLegendById(id);
         if (!legendExists) {
@@ -65,7 +77,7 @@ const updateLegend = async (req, res) => {
             }
         }
 
-        const legendeUpdate = await legendsModel.updateLegend(firstname, lastname, photo, idSport, id);
+        const legendeUpdate = await legendsModel.updateLegend(firstname, lastname, photo, idSport, description, id);
         res.status(200).json({ message: "Légende mise à jour" });
 
     } catch (error) {
@@ -119,11 +131,22 @@ const addAchievementToLegend = async (req, res) => {
     }
 };
 
+const getAchievementsByLegendId = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const achievements = await legendsModel.fetchAchievementsByLegendId(id);
+        res.status(200).json(achievements);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la récupération du palmarès de la légende" });
+    }
+};
+
 export default {
     getAllLegends,
     getLegendById,
     addLegend,
     updateLegend,
     deleteLegend,
-    addAchievementToLegend
+    addAchievementToLegend,
+    getAchievementsByLegendId
 };
