@@ -15,8 +15,29 @@ const fetchAllArticles = async () => {
         LEFT JOIN championships c ON a.idChampionship = c.championshipId
         GROUP BY a.articleId, u.firstName, u.lastName, c.name, a.isFeatured, a.publicationDate, a.views
         ORDER BY a.isFeatured DESC, a.publicationDate DESC;`;
-        
+
     const [result] = await bdd.query(sql);
+    return result;
+};
+
+const fetchArticlesByUserId = async (idUser) => {
+    const sql = `
+        SELECT 
+            a.articleId, a.content, a.title, a.picture, a.publicationDate, a.updateDate, 
+            a.isFeatured, a.views,
+            u.firstName, u.lastName,
+            GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS sportName,
+            c.name AS championshipName
+        FROM articles a
+        JOIN users u ON a.idUser = u.userId
+        LEFT JOIN sportsArticles sa ON a.articleId = sa.idArticle
+        LEFT JOIN sports s ON sa.idSport = s.sportId
+        LEFT JOIN championships c ON a.idChampionship = c.championshipId
+        WHERE a.idUser = ?
+        GROUP BY a.articleId, u.firstName, u.lastName, c.name, a.isFeatured, a.publicationDate, a.views
+        ORDER BY a.publicationDate DESC;`;
+
+    const [result] = await bdd.query(sql, [idUser]);
     return result;
 };
 
@@ -30,6 +51,12 @@ const fetchArticleById = async (id) => {
     `;
     const [result] = await bdd.query(sql, [id]);
     return result[0];
+};
+
+const getArticleAuthorId = async (idArticle) => {
+    const sql = `SELECT idUser FROM articles WHERE articleId = ?`;
+    const [result] = await bdd.query(sql, [idArticle]);
+    return result[0]?.idUser;
 };
 
 const createArticle = async (title, content, picture, idUser, idChampionship) => {
@@ -127,19 +154,27 @@ const setFeatured = async (articleId) => {
     return result;
 };
 
-const getDashboardStats = async () => {
-    // Articles publiés les 7 derniers jours
-    const sqlWeek = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
-    
-    // Articles publiés les 30 derniers jours
-    const sqlMonth = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 1 MONTH)`;
-    
-    // Total des vues
-    const sqlViews = `SELECT SUM(views) as totalViews FROM articles`;
+const getDashboardStats = async (idUser = null) => {
+    let userFilter = "";
+    let params = [];
+    if (idUser) {
+        userFilter = " AND idUser = ?";
+        params.push(idUser);
+    }
 
-    const [resultWeek] = await bdd.query(sqlWeek);
-    const [resultMonth] = await bdd.query(sqlMonth);
-    const [resultViews] = await bdd.query(sqlViews);
+    // Articles publiés les 7 derniers jours
+    const sqlWeek = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 7 DAY)${userFilter}`;
+
+    // Articles publiés les 30 derniers jours
+    const sqlMonth = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 1 MONTH)${userFilter}`;
+
+    // Total des vues
+    // (WHERE 1=1 permet d'ajouter le AND idUser facilement ensuite)
+    const sqlViews = `SELECT SUM(views) as totalViews FROM articles WHERE 1=1${userFilter}`;
+
+    const [resultWeek] = await bdd.query(sqlWeek, params);
+    const [resultMonth] = await bdd.query(sqlMonth, params);
+    const [resultViews] = await bdd.query(sqlViews, params);
 
     return {
         articlesLastWeek: resultWeek[0].count,
@@ -163,5 +198,7 @@ export default {
     getArticleByPopularity,
     setFeatured,
     getDashboardStats,
-    incrementViews
+    incrementViews,
+    fetchArticlesByUserId,
+    getArticleAuthorId
 };
