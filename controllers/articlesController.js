@@ -9,6 +9,26 @@ const getAllArticles = async (req, res) => {
     };
 };
 
+const getDashboardArticles = async (req, res) => {
+    try {
+        const idUser = req.user ? req.user.id : null;
+        const idRole = req.user ? req.user.idRole : null;
+
+        if (!idUser) return res.status(401).json({ message: "Utilisateur non identifié" });
+
+        let articles;
+        if (idRole === 1) { // L'admin voit tout le catalogue
+            articles = await articlesModel.fetchAllArticles();
+        } else { // Le journaliste ne voit que ses articles
+            articles = await articlesModel.fetchArticlesByUserId(idUser);
+        }
+        res.status(200).json(articles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la récupération des articles du dashboard" });
+    }
+};
+
 const getArticleById = async (req, res) => {
     try {
         const id = req.params.id;
@@ -90,6 +110,16 @@ const updateArticle = async (req, res) => {
             return res.status(400).json({ message: "Les champs sont obligatoires pour mettre à jour" });
         };
 
+        // Vérification de la propriété du journaliste
+        const idRole = req.user ? req.user.idRole : null;
+        const idUser = req.user ? req.user.id : null;
+        if (idRole === 2) {
+            const authorId = await articlesModel.getArticleAuthorId(id);
+            if (authorId !== idUser) {
+                return res.status(403).json({ message: "Accès interdit : Vous ne pouvez modifier que vos propres articles." });
+            }
+        }
+
         const articleUpdate = await articlesModel.updateArticle(title, content, picture, idChampionship, id);
         if (idSport && idSport !== "undefined" && idSport !== "") {
             //supprime les anciens liens de sport pour cet article
@@ -113,6 +143,17 @@ const updateArticle = async (req, res) => {
 const deleteArticle = async (req, res) => {
     try {
         const id = req.params.id;
+
+        // Vérification de la propriété du journaliste
+        const idRole = req.user ? req.user.idRole : null;
+        const idUser = req.user ? req.user.id : null;
+        if (idRole === 2) {
+            const authorId = await articlesModel.getArticleAuthorId(id);
+            if (authorId !== idUser) {
+                return res.status(403).json({ message: "Accès interdit : Vous ne pouvez supprimer que vos propres articles." });
+            }
+        }
+
         const result = await articlesModel.deleteArticle(id);
 
         if (result.affectedRows === 0) {
@@ -199,7 +240,15 @@ const defineFeatured = async (req, res) => {
 
 const getStats = async (req, res) => {
     try {
-        const stats = await articlesModel.getDashboardStats();
+        const idRole = req.user ? req.user.idRole : null;
+        const idUser = req.user ? req.user.id : null;
+
+        let stats;
+        if (idRole === 1) {
+            stats = await articlesModel.getDashboardStats(); // Admin voit tout
+        } else {
+            stats = await articlesModel.getDashboardStats(idUser); // Journaliste voit ses propres stats
+        }
         res.status(200).json(stats);
     } catch (error) {
         console.error(error);
@@ -209,6 +258,7 @@ const getStats = async (req, res) => {
 
 export default {
     getAllArticles,
+    getDashboardArticles,
     getArticleById,
     addArticle,
     updateArticle,

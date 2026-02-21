@@ -9,8 +9,9 @@ import multerConfig from '../middleware/multerConfig.js';
 const router = express.Router();
 
 router.get('/', articlesController.getAllArticles);
+router.get('/dashboard', checkToken, checkEditor, articlesController.getDashboardArticles);
 router.get('/popularity', checkToken, checkAdmin, articlesController.getPopularity);
-router.get('/stats', checkToken, checkAdmin, articlesController.getStats);
+router.get('/stats', checkToken, checkEditor, articlesController.getStats);
 router.get('/:id', articlesController.getArticleById);
 router.post('/', checkToken, multerConfig, checkEditor, articlesController.addArticle);
 router.put('/:id', checkToken, multerConfig, checkEditor, articlesController.updateArticle);
