@@ -4,7 +4,8 @@ const fetchAllLegends = async () => {
     const sql = `
         SELECT l.legendId, l.firstname, l.lastname, l.photo, l.idSport, l.description, s.name as sportName
         FROM legends AS l
-        INNER JOIN sports AS s ON l.idSport = s.sportId;`;
+        INNER JOIN sports AS s ON l.idSport = s.sportId
+        ORDER BY l.lastname ASC;`;
     const [result] = await bdd.query(sql);
     return result;
 };
@@ -45,7 +46,7 @@ const addAchievementToLegend = async (idLegend, idAchievement, years) => {
 
 const fetchAchievementsByLegendId = async (idLegend) => {
     const sql = `
-        SELECT a.label, al.years 
+        SELECT a.achievementId, a.label, al.years 
         FROM achievementsLegends al
         INNER JOIN achievements a ON al.idAchievement = a.achievementId
         WHERE al.idLegend = ?
@@ -63,6 +64,12 @@ const checkAchievement = async (idLegend, idAchievement, years) => {
     return result[0];
 }
 
+const removeAchievementFromLegend = async (idLegend, idAchievement, years) => {
+    const sql = `DELETE FROM achievementsLegends WHERE idLegend = ? AND idAchievement = ? AND years = ?;`;
+    const [result] = await bdd.query(sql, [idLegend, idAchievement, years]);
+    return result;
+};
+
 export default {
     fetchAllLegends,
     fetchLegendById,
@@ -71,5 +78,6 @@ export default {
     deleteLegend,
     addAchievementToLegend,
     fetchAchievementsByLegendId,
-    checkAchievement
+    checkAchievement,
+    removeAchievementFromLegend
 };
