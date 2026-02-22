@@ -13,5 +13,6 @@ router.post('/', checkToken, multerConfig, checkAdmin, legendsController.addLege
 router.put('/:id', checkToken, multerConfig, checkAdmin, legendsController.updateLegend);
 router.delete('/:id', checkToken, checkAdmin, legendsController.deleteLegend);
 router.post('/:id/achievements', checkToken, checkAdmin, legendsController.addAchievementToLegend);
+router.delete('/:id/achievements/:idAchievement/:years', checkToken, checkAdmin, legendsController.deleteAchievementFromLegend);
 
 export default router;

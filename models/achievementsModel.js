@@ -1,32 +1,32 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllAchievements = async () => {
-    const sql = `SELECT achievementId, label FROM achievements`;
+    const sql = `SELECT achievementId, label, type FROM achievements`;
     const [result] = await bdd.query(sql);
     return result;
 };
 
 const fetchAchievementById = async (id) => {
-    const sql = `SELECT achievementId, label FROM achievements WHERE achievementId = ?`;
+    const sql = `SELECT achievementId, label, type FROM achievements WHERE achievementId = ?`;
     const [result] = await bdd.query(sql, [id]);
     return result[0];
 };
 
 const fetchAchievementByLabel = async (label) => {
-    const sql = `SELECT achievementId, label FROM achievements WHERE label = ?`;
+    const sql = `SELECT achievementId, label, type FROM achievements WHERE label = ?`;
     const [result] = await bdd.query(sql, [label]);
     return result[0];
 };
 
-const createAchievement = async (label) => {
-    const sql = `INSERT INTO achievements (label) VALUES (?)`;
-    const [result] = await bdd.query(sql, [label]);
+const createAchievement = async (label, type) => {
+    const sql = `INSERT INTO achievements (label, type) VALUES (?, ?)`;
+    const [result] = await bdd.query(sql, [label, type]);
     return result;
 };
 
-const updateAchievement = async (label, id) => {
-    const sql = `UPDATE achievements SET label = ? WHERE achievementId = ?`;
-    const [result] = await bdd.query(sql, [label, id]);
+const updateAchievement = async (label, type, id) => {
+    const sql = `UPDATE achievements SET label = ?, type = ? WHERE achievementId = ?`;
+    const [result] = await bdd.query(sql, [label, type, id]);
     return result;
 };
 

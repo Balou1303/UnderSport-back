@@ -141,6 +141,20 @@ const getAchievementsByLegendId = async (req, res) => {
     }
 };
 
+const deleteAchievementFromLegend = async (req, res) => {
+    try {
+        const idLegend = req.params.id;
+        const idAchievement = req.params.idAchievement;
+        const years = req.params.years;
+
+        await legendsModel.removeAchievementFromLegend(idLegend, idAchievement, years);
+        res.status(200).json({ message: "Palmarès retiré de la légende" });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la suppression du palmarès" });
+    }
+};
+
 export default {
     getAllLegends,
     getLegendById,
@@ -148,5 +162,6 @@ export default {
     updateLegend,
     deleteLegend,
     addAchievementToLegend,
-    getAchievementsByLegendId
+    getAchievementsByLegendId,
+    deleteAchievementFromLegend
 };

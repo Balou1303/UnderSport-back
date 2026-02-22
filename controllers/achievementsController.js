@@ -26,7 +26,7 @@ const getAchievementById = async (req, res) => {
 
 const addAchievement = async (req, res) => {
     try {
-        const { label } = req.body;
+        const { label, type } = req.body;
 
         if (!label) {
             return res.status(400).json({ message: "Le nom du palmarès est obligatoire" });
@@ -38,7 +38,7 @@ const addAchievement = async (req, res) => {
             return res.status(409).json({ message: "Ce palmarès existe déjà" });
         }
 
-        const newAchievement = await achievementsModel.createAchievement(label);
+        const newAchievement = await achievementsModel.createAchievement(label, type);
         res.status(201).json({ message: "Palmarès créé", id: newAchievement.insertId });
 
     } catch (error) {
@@ -49,7 +49,7 @@ const addAchievement = async (req, res) => {
 const updateAchievement = async (req, res) => {
     try {
         const id = req.params.id;
-        const { label } = req.body;
+        const { label, type } = req.body;
 
         if (!label) {
             return res.status(400).json({ message: "Le nom du palmares est obligatoire" });
@@ -65,7 +65,7 @@ const updateAchievement = async (req, res) => {
             return res.status(409).json({ message: "Ce palmarès existe déjà" });
         }
 
-        const achievementUpdate = await achievementsModel.updateAchievement(label, id);
+        const achievementUpdate = await achievementsModel.updateAchievement(label, type, id);
         res.status(200).json({ message: "Palmarès mis à jour" });
 
     } catch (error) {
@@ -76,7 +76,7 @@ const updateAchievement = async (req, res) => {
 const deleteAchievement = async (req, res) => {
     try {
         const id = req.params.id;
-        
+
         const result = await achievementsModel.deleteAchievement(id);
 
         if (result.affectedRows === 0) {
