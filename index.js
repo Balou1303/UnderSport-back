@@ -15,6 +15,7 @@ import broadcastersRoutes from "./routes/broadcastersRoutes.js";
 import legendRoutes from "./routes/legendsRoutes.js";
 import achievementsRoutes from "./routes/achievementsRoutes.js";
 import lexiconsRoutes from "./routes/lexiconsRoutes.js";
+import externalApiRoutes from "./routes/externalApiRoutes.js";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use('/api/broadcasters', broadcastersRoutes);
 app.use('/api/legends', legendRoutes);
 app.use('/api/achievements', achievementsRoutes);
 app.use('/api/lexicons', lexiconsRoutes);
+app.use('/api/external', externalApiRoutes);
 
 app.listen(process.env.SERVER_PORT || 3000, () => {
     console.log(`L'API est lancée sur http://localhost:${process.env.SERVER_PORT || 3000} ✅​`);
