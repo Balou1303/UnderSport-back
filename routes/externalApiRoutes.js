@@ -12,4 +12,8 @@ router.get('/standings/:league', externalApiController.getStandings);
 router.get('/matches', externalApiController.getMatches);
 router.get('/matches/:league', externalApiController.getMatches);
 
+// Route pour récupérer les matchs en direct (ex: /api/external/live ou /api/external/live/FL1)
+router.get('/live', externalApiController.getLiveMatches);
+router.get('/live/:league', externalApiController.getLiveMatches);
+
 export default router;
