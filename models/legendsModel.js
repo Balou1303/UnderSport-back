@@ -46,7 +46,7 @@ const addAchievementToLegend = async (idLegend, idAchievement, years) => {
 
 const fetchAchievementsByLegendId = async (idLegend) => {
     const sql = `
-        SELECT a.achievementId, a.label, al.years 
+        SELECT a.achievementId, a.label, a.type, al.years 
         FROM achievementsLegends al
         INNER JOIN achievements a ON al.idAchievement = a.achievementId
         WHERE al.idLegend = ?
