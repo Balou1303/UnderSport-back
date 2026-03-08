@@ -26,19 +26,20 @@ const getSportsById = async (req, res) => {
 
 const addSport = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name, rulesDescription } = req.body;
         if (!name) {
             res.status(400).json({ message: "Le champ est obligatoire" });
             return;
         };
         const existingSport = await sportsModel.fetchExistingSports(name);
         if (existingSport) {
-            res.status(409).json({ message: "Le sport existe déja" });
+            res.status(409).json({ message: "Le sport existe déjà" });
             return;
         };
-        const createSport = await sportsModel.createSport(name);
+        const createSport = await sportsModel.createSport(name, rulesDescription);
         res.status(201).json({ message: "Sport créé avec succès" });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Erreur lors de la création du sport" });
     };
 };
@@ -46,7 +47,7 @@ const addSport = async (req, res) => {
 const updateSport = async (req, res) => {
     try {
         const id = req.params.id;
-        const { name } = req.body;
+        const { name, rulesDescription } = req.body;
 
         if (!name) {
             res.status(400).json({ message: 'Un nom est obligatoire' });
@@ -58,7 +59,7 @@ const updateSport = async (req, res) => {
         if (existingSport && existingSport.sportId != id) {
             return res.status(409).json({ message: "Le nom existe déjà" });
         };
-        const sportUpdate = await sportsModel.updateSport(name, id);
+        const sportUpdate = await sportsModel.updateSport(name, rulesDescription, id);
         if (sportUpdate.affectedRows === 0) {
             res.status(404).json({ message: "Sport non trouvé" });
         } else {
@@ -66,6 +67,7 @@ const updateSport = async (req, res) => {
         }
 
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Erreur lors de la mise à jour" });
     }
 };

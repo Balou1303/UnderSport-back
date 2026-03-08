@@ -16,7 +16,7 @@ router.get('/matches/:league', externalApiController.getMatches);
 router.get('/live', externalApiController.getLiveMatches);
 router.get('/live/:league', externalApiController.getLiveMatches);
 
-// Route NBA
+// Routes NBA
 router.get('/nba/matches/:date', nbaController.getMatches);
 
 export default router;
