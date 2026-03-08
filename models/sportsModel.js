@@ -1,26 +1,26 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllSports = async () => {
-    const sql = `SELECT sportId, name FROM sports;`;
+    const sql = `SELECT sportId, name, rulesDescription FROM sports;`;
     const [result] = await bdd.query(sql)
     return result;
 };
 
 const fetchSportsById = async (id) => {
-    const sql = `SELECT sportId, name FROM sports WHERE sportId = ?;`;
+    const sql = `SELECT sportId, name, rulesDescription FROM sports WHERE sportId = ?;`;
     const [result] = await bdd.query(sql, [id]);
     return result[0];
 };
 
-const createSport = async (name) => {
-    const sql = `INSERT INTO sports (name) VALUES (?)`;
-    const [result] = await bdd.query(sql, [name]);
+const createSport = async (name, rulesDescription) => {
+    const sql = `INSERT INTO sports (name, rulesDescription) VALUES (?, ?)`;
+    const [result] = await bdd.query(sql, [name, rulesDescription]);
     return result;
 };
 
-const updateSport = async (name, id) => {
-    const sql = `UPDATE sports SET name = ? WHERE sportId = ?;`;
-    const [result] = await bdd.query(sql, [name, id]);
+const updateSport = async (name, rulesDescription, id) => {
+    const sql = `UPDATE sports SET name = ?, rulesDescription = ? WHERE sportId = ?;`;
+    const [result] = await bdd.query(sql, [name, rulesDescription, id]);
     return result;
 };
 
@@ -60,8 +60,15 @@ const addLexiconToSport = async (idSport, idLexicon) => {
 };
 
 const deleteLexiconFromSport = async (idSport, idLexicon) => {
-    const sql = `DELETE FROM lexiconsSports WHERE idSport = ? AND idLexicon = ?`;
-    const [result] = await bdd.query(sql, [idSport, idLexicon]);
+    let sql = `DELETE FROM lexiconsSports WHERE idLexicon = ?`;
+    let params = [idLexicon];
+
+    if (idSport) {
+        sql = `DELETE FROM lexiconsSports WHERE idSport = ? AND idLexicon = ?`;
+        params = [idSport, idLexicon];
+    }
+
+    const [result] = await bdd.query(sql, params);
     return result;
 };
 

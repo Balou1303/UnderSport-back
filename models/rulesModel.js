@@ -1,8 +1,8 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllRules = async () => {
-    const sql = `SELECT ruleId, name, description FROM rules;`;
-    const [result] = await bdd.query(sql)
+    const sql = "SELECT rules.*, rulesSports.idSport FROM rules LEFT JOIN rulesSports ON rules.ruleId = rulesSports.idRule";
+    const [result] = await bdd.query(sql);
     return result;
 };
 
@@ -25,6 +25,8 @@ const updateRule = async (name, description, id) => {
 };
 
 const deleteRule = async (id) => {
+    // supprime d'abord les liens dans la table de jointure pour éviter les erreurs de contrainte
+    await bdd.query(`DELETE FROM rulesSports WHERE idRule = ?`, [id]);
     const sql = `DELETE FROM rules WHERE ruleId = ?;`;
     const [result] = await bdd.query(sql, [id]);
     return result;
@@ -48,8 +50,15 @@ const addRuleToSport = async (idRule, idSport) => {
 };
 
 const deleteRuleFromSport = async (idRule, idSport) => {
-    const sql = `DELETE FROM rulesSports WHERE idRule = ? AND idSport = ?`;
-    const [result] = await bdd.query(sql, [idRule, idSport]);
+    let sql = `DELETE FROM rulesSports WHERE idRule = ?`;
+    let params = [idRule];
+
+    if (idSport) {
+        sql += ` AND idSport = ?`;
+        params.push(idSport);
+    }
+
+    const [result] = await bdd.query(sql, params);
     return result;
 };
 

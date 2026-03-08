@@ -1,4 +1,5 @@
 import lexiconsModel from "../models/lexiconsModel.js";
+import sportsModel from "../models/sportsModel.js";
 
 const getAllLexicons = async (req, res) => {
     try {
@@ -26,7 +27,7 @@ const getLexiconById = async (req, res) => {
 
 const addLexicon = async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, idSport } = req.body;
 
         if (!name || !description) {
             return res.status(400).json({ message: "Le nom et la description sont obligatoires" });
@@ -38,9 +39,16 @@ const addLexicon = async (req, res) => {
         }
 
         const newLexicon = await lexiconsModel.createLexicon(name, description);
+
+        // Si un idSport est fourni, on lie le terme au sport
+        if (idSport) {
+            await sportsModel.addLexiconToSport(idSport, newLexicon.insertId);
+        }
+
         res.status(201).json({ message: "Lexique ajouté", id: newLexicon.insertId });
 
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Erreur lors de la création du lexique" });
     }
 };
@@ -48,7 +56,7 @@ const addLexicon = async (req, res) => {
 const updateLexicon = async (req, res) => {
     try {
         const id = req.params.id;
-        const { name, description } = req.body;
+        const { name, description, idSport } = req.body;
 
         if (!name || !description) {
             return res.status(400).json({ message: "Le nom et la description sont obligatoires" });
@@ -64,10 +72,19 @@ const updateLexicon = async (req, res) => {
             return res.status(409).json({ message: "Ce lexique existe déjà" });
         }
 
-        const lexiconUpdate = await lexiconsModel.updateLexicon(name, description, id);
-        res.status(200).json({ message: "Lexique mis à jour" });
+        await lexiconsModel.updateLexicon(name, description, id);
+
+        // Mise à jour de l'association avec le sport
+        if (idSport) {
+            // Nettoyage de l'ancien lien et ajout du nouveau
+            await sportsModel.deleteLexiconFromSport(null, id);
+            await sportsModel.addLexiconToSport(idSport, id);
+        }
+
+        res.status(200).json({ message: "Lexique mis à jour avec succès" });
 
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Erreur lors de la mise à jour" });
     }
 };

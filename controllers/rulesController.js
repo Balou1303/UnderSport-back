@@ -25,14 +25,22 @@ const getRulesById = async (req, res) => {
 
 const addRule = async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, idSport } = req.body;
         if (!name || !description) {
             res.status(400).json({ message: "Les champs sont obligatoires" });
             return;
         };
+
         const createRules = await rulesModel.createRule(name, description);
+
+        // Si un idSport est fourni, on lie la règle au sport
+        if (idSport) {
+            await rulesModel.addRuleToSport(createRules.insertId, idSport);
+        }
+
         res.status(201).json({ message: "Règles créée avec succès" });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Erreur lors de la création de la règle" });
     };
 };
@@ -40,21 +48,33 @@ const addRule = async (req, res) => {
 const updateRule = async (req, res) => {
     try {
         const id = req.params.id;
-        const { name, description } = req.body;
+        const { name, description, idSport } = req.body;
 
         if (!name || !description) {
             res.status(400).json({ message: 'Un nom et une description sont obligatoires' });
             return;
         };
 
-        const ruleUpdate = await rulesModel.updateRule(name, description, id);
-        if (ruleUpdate.affectedRows === 0) {
-            res.status(404).json({ message: "Règle non trouvée" });
-        } else {
-            res.status(200).json({ message: "Règle mise à jour avec succès" });
+        // On vérifie d'abord si la règle existe
+        const existingRule = await rulesModel.fetchRulesById(id);
+        if (!existingRule) {
+            return res.status(404).json({ message: "Règle non trouvée" });
         }
 
+        // Mise à jour des textes
+        await rulesModel.updateRule(name, description, id);
+
+        // Mise à jour de l'association avec le sport
+        if (idSport) {
+            // On nettoie tous les liens existants pour cette règle et on crée le nouveau
+            await rulesModel.deleteRuleFromSport(id, null);
+            await rulesModel.addRuleToSport(id, idSport);
+        }
+
+        res.status(200).json({ message: "Règle mise à jour avec succès" });
+
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Erreur lors de la mise à jour" });
     }
 };
