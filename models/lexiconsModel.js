@@ -1,7 +1,7 @@
 import bdd from "../config/bdd.js";
 
 const fetchAllLexicons = async () => {
-    const sql = `SELECT lexiconId, name, description FROM lexicons;`;
+    const sql = "SELECT lexicons.*, lexiconsSports.idSport FROM lexicons LEFT JOIN lexiconsSports ON lexicons.lexiconId = lexiconsSports.idLexicon";
     const [result] = await bdd.query(sql);
     return result;
 };
@@ -25,6 +25,8 @@ const updateLexicon = async (name, description, id) => {
 };
 
 const deleteLexicon = async (id) => {
+    // supprime d'abord les liens dans la table de jointure pour éviter les erreurs de contrainte
+    await bdd.query(`DELETE FROM lexiconsSports WHERE idLexicon = ?`, [id]);
     const sql = `DELETE FROM lexicons WHERE lexiconId = ?;`;
     const [result] = await bdd.query(sql, [id]);
     return result;
@@ -36,7 +38,7 @@ const fetchLexiconByName = async (name) => {
     return result[0];
 };
 
-export default{
+export default {
     fetchAllLexicons,
     fetchLexiconsById,
     createLexicon,
