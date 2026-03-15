@@ -169,17 +169,21 @@ const getDashboardStats = async (idUser = null) => {
     const sqlMonth = `SELECT COUNT(*) as count FROM articles WHERE publicationDate >= DATE_SUB(NOW(), INTERVAL 1 MONTH)${userFilter}`;
 
     // Total des vues
-    // (WHERE 1=1 permet d'ajouter le AND idUser facilement ensuite)
     const sqlViews = `SELECT SUM(views) as totalViews FROM articles WHERE 1=1${userFilter}`;
+
+    // Top 3 articles les plus consultés
+    const sqlTop = `SELECT articleId, title, views FROM articles WHERE 1=1${userFilter} ORDER BY views DESC LIMIT 3`;
 
     const [resultWeek] = await bdd.query(sqlWeek, params);
     const [resultMonth] = await bdd.query(sqlMonth, params);
     const [resultViews] = await bdd.query(sqlViews, params);
+    const [resultTop] = await bdd.query(sqlTop, params);
 
     return {
         articlesLastWeek: resultWeek[0].count,
         articlesLastMonth: resultMonth[0].count,
-        totalViews: resultViews[0].totalViews || 0 // Si null (0 vues), on renvoie 0
+        totalViews: resultViews[0].totalViews || 0,
+        topArticles: resultTop
     };
 };
 
