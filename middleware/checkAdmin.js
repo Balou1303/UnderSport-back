@@ -1,6 +1,6 @@
 const checkAdmin = (req, res, next) => {
     // req.user contient les infos du token (grâce à checkToken juste avant)
-    // Sécurité : si jamais checkToken a été oublié dans la route
+    // Sécurité :si jamais checkToken a été oublié dans la route
     if (!req.user) {
         return res.status(401).json({ message: "Utilisateur non connecté" });
     }

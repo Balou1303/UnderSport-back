@@ -50,5 +50,5 @@ app.use('/api/lexicons', lexiconsRoutes);
 app.use('/api/external', externalApiRoutes);
 
 app.listen(process.env.SERVER_PORT || 3000, () => {
-    console.log(`L'API est lancée sur http://localhost:${process.env.SERVER_PORT || 3000} ✅​`);
+    console.log(`L'API est lancée sur http://localhost:${process.env.SERVER_PORT} ✅​`);
 });

@@ -34,7 +34,7 @@ const getCached = (key) => {
         console.log(`[CACHE HIT] ${key}`);
         return entry.data;
     }
-    return null; // On renvoie null pour forcer le refresh, mais on garde l'objet en Map au cas où
+    return null; // renvoie null pour forcer le refresh, mais garde l'objet en Map au cas où
 };
 
 const setCache = (key, newData) => {
@@ -94,7 +94,7 @@ const fetchWithCache = async (url) => {
         setCache(url, response.data);
         return response.data;
     } catch (error) {
-        // FALLBACK : Si l'API échoue (ex: Rate Limit 429), on tente de renvoyer ce qu'on a en cache
+        // FALLBACK : Si l'API échoue (ex: Rate Limit 429), tente de renvoyer ce qu'il y a en cache
         // même si c'est expiré, au lieu de faire une erreur 500
         const oldEntry = cache.get(url);
         if (oldEntry) {
