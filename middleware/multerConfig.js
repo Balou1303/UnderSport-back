@@ -26,10 +26,9 @@ const storage = multer.diskStorage({
     const name = file.originalname.split(' ').join('_').split('.')[0];
     const extension = MIME_TYPES[file.mimetype];
     
-    // Ajoute un timestamp (Date.now()) pour rendre le nom unique
+    // Ajout d'un timestamp (Date.now()) pour rendre le nom unique
     callback(null, name + Date.now() + '.' + extension);
   }
 });
 
-// Exporte le middleware configuré
 export default multer({ storage: storage }).single('image');
